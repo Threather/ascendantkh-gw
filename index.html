@@ -133,6 +133,8 @@ td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
 .badge.atk{background:rgba(201,120,58,.15);color:var(--atk)}
 .badge.def{background:rgba(90,122,181,.15);color:var(--def)}
 .badge.jungle{background:rgba(39,160,106,.12);color:var(--heal)}
+.badge.jungle-top{background:rgba(58,127,212,.15);color:#5aaaf5}
+.badge.jungle-bot{background:rgba(201,120,58,.15);color:#e8943a}
 
 .empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:13px;letter-spacing:.05em}
 .empty-state p{margin-top:.4rem;font-size:11px;opacity:.6}
@@ -409,17 +411,47 @@ window.submitForm = async function() {
   if (players.length >= MAX) return toast('Registration is full!', false);
   if (jungleOn && jungleCount() >= JUNGLE_MAX) return toast('Jungle is full (8/8)!', false);
 
+  // Block healer from jungle if both sides already have a healer
+  if (jungleOn && role === 'heal') {
+    const topHeal  = players.filter(p => p.jungle && p.jungleSide === 'Top'    && p.role === 'heal').length;
+    const botHeal  = players.filter(p => p.jungle && p.jungleSide === 'Bottom' && p.role === 'heal').length;
+    if (topHeal >= 1 && botHeal >= 1) return toast('Both jungle sides already have a healer. Uncheck jungle or change role.', false);
+  }
+
   const dup = players.find(p => p.name.toLowerCase() === name.toLowerCase());
   if (dup) return toast(`"${name}" is already registered.`, false);
+
+  // ── AUTO ASSIGN JUNGLE SIDE ──
+  let jungleSide = null;
+  if (jungleOn) {
+    const topPlayers = players.filter(p => p.jungle && p.jungleSide === 'Top');
+    const botPlayers = players.filter(p => p.jungle && p.jungleSide === 'Bottom');
+    const topHeal    = topPlayers.filter(p => p.role === 'heal').length;
+    const botHeal    = botPlayers.filter(p => p.role === 'heal').length;
+
+    if (role === 'heal') {
+      // Assign to side missing a healer
+      jungleSide = topHeal === 0 ? 'Top' : 'Bottom';
+    } else {
+      // Assign to side with fewer people, but prefer side that still needs a healer to keep space
+      // Priority: balance numbers, but don't fill a side to 4 if it has no healer yet
+      const topFull = topPlayers.length >= 4;
+      const botFull = botPlayers.length >= 4;
+      if (topFull) jungleSide = 'Bottom';
+      else if (botFull) jungleSide = 'Top';
+      else jungleSide = topPlayers.length <= botPlayers.length ? 'Top' : 'Bottom';
+    }
+  }
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.textContent = 'Registering…';
 
   try {
-    await push(baseRef, { name, weapon1: w1, weapon2: w2, role, team, avail, jungle: jungleOn, registeredAt: Date.now() });
+    await push(baseRef, { name, weapon1: w1, weapon2: w2, role, team, avail, jungle: jungleOn, jungleSide, registeredAt: Date.now() });
     resetForm();
-    toast(`${name} registered successfully!`, true);
+    const sideMsg = jungleSide ? ` → Jungle ${jungleSide}` : '';
+    toast(`${name} registered!${sideMsg}`, true);
   } catch(e) {
     toast('Failed to register. Check your connection.', false);
     btn.disabled = false;
@@ -464,9 +496,12 @@ function render() {
   const wrap  = document.getElementById('jungle-wrap');
   const note  = document.getElementById('jungle-full');
   const badge = document.getElementById('jungle-badge');
-  badge.textContent = jc + ' / ' + JUNGLE_MAX;
+  const topCount = players.filter(p => p.jungle && p.jungleSide === 'Top').length;
+  const botCount = players.filter(p => p.jungle && p.jungleSide === 'Bottom').length;
+  badge.textContent = jc + ' / ' + JUNGLE_MAX + '  ·  Top ' + topCount + '  Bot ' + botCount;
   if (jc >= JUNGLE_MAX) {
     wrap.classList.add('disabled');
+    note.textContent = 'Jungle is full (8/8)';
     note.style.display = 'block';
     if (jungleOn) { jungleOn = false; wrap.classList.remove('checked'); }
   } else {
@@ -480,7 +515,7 @@ function render() {
 
   const tbody = document.getElementById('roster-body');
   if (players.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = players.map((p, i) => `
@@ -491,7 +526,9 @@ function render() {
       <td><span class="badge ${p.role}">${p.role}</span></td>
       <td><span class="badge ${p.team === 'defend' ? 'def' : 'atk'}">${p.team}</span></td>
       <td style="font-size:11px;color:var(--text2);white-space:nowrap">${esc(p.avail || '—')}</td>
-      <td>${p.jungle ? '<span class="badge jungle">yes</span>' : '<span style="color:var(--text3)">—</span>'}</td>
+      <td>${p.jungle
+        ? `<span class="badge ${p.jungleSide === 'Top' ? 'jungle-top' : 'jungle-bot'}">${p.jungleSide || 'Jgl'}</span>`
+        : '<span style="color:var(--text3)">—</span>'}</td>
     </tr>`).join('');
 }
 
