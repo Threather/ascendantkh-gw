@@ -77,11 +77,19 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .no-players{font-size:11px;color:var(--text3);text-align:center;padding:.75rem 0}
 
 /* ── MAP CANVAS AREA ── */
-.map-area{flex:1;position:relative;overflow:hidden;background:#080a0f;}
-#map-canvas{display:block;width:100%;height:100%}
+.map-area{flex:1;position:relative;overflow:hidden;background:#080a0f;cursor:grab;}
+.map-area.panning{cursor:grabbing;}
+#zoom-container{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform;}
+#map-canvas{display:block;}
+
+/* zoom controls */
+.zoom-controls{position:absolute;bottom:50px;right:14px;display:flex;flex-direction:column;gap:4px;z-index:30;}
+.zoom-btn{width:30px;height:30px;border-radius:var(--r-sm);background:var(--bg-card);border:1px solid var(--border-hi);color:var(--text1);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.zoom-btn:hover{background:var(--bg-hover);border-color:var(--gold);color:var(--gold)}
+.zoom-label{font-size:9px;color:var(--text2);text-align:center;letter-spacing:.04em;}
 
 /* ── PLACED MARKER ── */
-.marker{position:absolute;transform:translate(-50%,-50%);cursor:move;user-select:none;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:20;transition:filter .15s;}
+.marker{position:absolute;transform:translate(-50%,-50%);cursor:move;user-select:none;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:20;transition:filter .15s;pointer-events:all;}
 .marker:hover{filter:drop-shadow(0 0 6px var(--gold))}
 .marker img{width:36px;height:36px;object-fit:contain;pointer-events:none}
 .marker .mlabel{font-size:9px;font-weight:600;color:#fff;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:10px;white-space:nowrap;pointer-events:none;letter-spacing:.04em}
@@ -90,7 +98,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .marker:hover .del-btn,.marker.selected .del-btn{display:flex}
 
 /* player marker */
-.pmarker{position:absolute;transform:translate(-50%,-50%);cursor:move;user-select:none;z-index:21;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.pmarker{position:absolute;transform:translate(-50%,-50%);cursor:move;user-select:none;z-index:21;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:all;}
 .pmarker:hover .pmarker-inner{box-shadow:0 0 0 2px var(--gold)}
 .pmarker-inner{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.3);transition:box-shadow .15s;}
 .pmarker-inner.heal{background:var(--heal)}.pmarker-inner.tank{background:var(--tank)}.pmarker-inner.dps{background:var(--dps)}
@@ -203,8 +211,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="map-area" id="map-area"
     ondragover="event.preventDefault()"
     ondrop="onDrop(event)">
-    <canvas id="map-canvas"></canvas>
-    <div id="markers-layer" style="position:absolute;inset:0;pointer-events:none;z-index:15"></div>
+    <div id="zoom-container">
+      <canvas id="map-canvas"></canvas>
+      <div id="markers-layer" style="position:absolute;top:0;left:0;pointer-events:all;z-index:15"></div>
+    </div>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="adjustZoom(0.2)" title="Zoom in">+</button>
+      <div class="zoom-label" id="zoom-label">100%</div>
+      <button class="zoom-btn" onclick="adjustZoom(-0.2)" title="Zoom out">−</button>
+      <button class="zoom-btn" onclick="resetZoom()" title="Reset zoom" style="font-size:11px">⌂</button>
+    </div>
   </div>
 
 </div>
@@ -253,6 +269,129 @@ const canvas = document.getElementById('map-canvas');
 const ctx    = canvas.getContext('2d');
 const mapArea = document.getElementById('map-area');
 const markersLayer = document.getElementById('markers-layer');
+const zoomContainer = document.getElementById('zoom-container');
+
+// ── ZOOM / PAN STATE ──
+let zoomScale = 1;
+let panX = 0, panY = 0;
+let isPanning = false;
+let panStartX = 0, panStartY = 0, panStartPanX = 0, panStartPanY = 0;
+let lastPinchDist = null;
+
+function applyTransform() {
+  zoomContainer.style.transform = `translate(${panX}px,${panY}px) scale(${zoomScale})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoomScale * 100) + '%';
+}
+
+window.adjustZoom = function(delta) {
+  const newScale = Math.min(4, Math.max(0.3, zoomScale + delta));
+  // zoom toward center of map area
+  const cx = mapArea.clientWidth / 2;
+  const cy = mapArea.clientHeight / 2;
+  panX = cx - (cx - panX) * (newScale / zoomScale);
+  panY = cy - (cy - panY) * (newScale / zoomScale);
+  zoomScale = newScale;
+  applyTransform();
+};
+
+window.resetZoom = function() {
+  zoomScale = 1; panX = 0; panY = 0;
+  applyTransform();
+};
+
+// mouse wheel zoom
+mapArea.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.12 : -0.12;
+  const rect = mapArea.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const newScale = Math.min(4, Math.max(0.3, zoomScale + delta));
+  panX = mx - (mx - panX) * (newScale / zoomScale);
+  panY = my - (my - panY) * (newScale / zoomScale);
+  zoomScale = newScale;
+  applyTransform();
+}, { passive: false });
+
+// middle-mouse / space+drag pan — also right-click pan
+mapArea.addEventListener('mousedown', e => {
+  // pan on middle mouse OR when in select mode (but not on markers)
+  if (e.button === 1 || (e.button === 2)) {
+    e.preventDefault();
+    isPanning = true;
+    panStartX = e.clientX; panStartY = e.clientY;
+    panStartPanX = panX; panStartPanY = panY;
+    mapArea.classList.add('panning');
+  }
+});
+// pan with left mouse on canvas only (not markers) in select mode
+mapArea.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  if (e.target !== canvas) return; // only on canvas background
+  if (mode !== 'select') return;
+  isPanning = true;
+  panStartX = e.clientX; panStartY = e.clientY;
+  panStartPanX = panX; panStartPanY = panY;
+  mapArea.classList.add('panning');
+});
+document.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  panX = panStartPanX + (e.clientX - panStartX);
+  panY = panStartPanY + (e.clientY - panStartY);
+  applyTransform();
+});
+document.addEventListener('mouseup', () => {
+  isPanning = false;
+  mapArea.classList.remove('panning');
+});
+mapArea.addEventListener('contextmenu', e => e.preventDefault());
+
+// pinch-to-zoom (touch)
+mapArea.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    lastPinchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  } else if (e.touches.length === 1 && mode === 'select') {
+    // single-finger pan in select mode if not touching a marker
+    if (e.target === canvas || e.target === zoomContainer || e.target === markersLayer) {
+      isPanning = true;
+      panStartX = e.touches[0].clientX; panStartY = e.touches[0].clientY;
+      panStartPanX = panX; panStartPanY = panY;
+    }
+  }
+}, { passive: true });
+mapArea.addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    if (lastPinchDist) {
+      const delta = (dist - lastPinchDist) * 0.008;
+      const rect = mapArea.getBoundingClientRect();
+      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+      const newScale = Math.min(4, Math.max(0.3, zoomScale + delta));
+      panX = mx - (mx - panX) * (newScale / zoomScale);
+      panY = my - (my - panY) * (newScale / zoomScale);
+      zoomScale = newScale;
+      applyTransform();
+    }
+    lastPinchDist = dist;
+  } else if (isPanning && e.touches.length === 1) {
+    e.preventDefault();
+    panX = panStartPanX + (e.touches[0].clientX - panStartX);
+    panY = panStartPanY + (e.touches[0].clientY - panStartY);
+    applyTransform();
+  }
+}, { passive: false });
+mapArea.addEventListener('touchend', e => {
+  if (e.touches.length < 2) lastPinchDist = null;
+  if (e.touches.length === 0) { isPanning = false; }
+});
 
 const mapImg = new Image();
 mapImg.src = 'https://raw.githubusercontent.com/Threather/ascendantkh-gw/main/map.png';
@@ -268,7 +407,6 @@ window.addEventListener('resize', resizeCanvas);
 
 function redrawCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // draw map image centered/cover
   if (mapImg.complete && mapImg.naturalWidth) {
     const scale = Math.max(canvas.width / mapImg.naturalWidth, canvas.height / mapImg.naturalHeight);
     const w = mapImg.naturalWidth  * scale;
@@ -277,7 +415,6 @@ function redrawCanvas() {
     const y = (canvas.height - h) / 2;
     ctx.drawImage(mapImg, x, y, w, h);
   }
-  // replay draw history
   drawHistory.forEach(path => drawPath(path));
 }
 
@@ -313,17 +450,22 @@ function drawPath(path) {
   }
 }
 
-// ── CANVAS EVENTS ──
+// ── CANVAS EVENTS (drawing — account for zoom) ──
+function canvasPoint(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  // getBoundingClientRect already accounts for CSS transform, so this is correct
+  return { x: (clientX - r.left), y: (clientY - r.top) };
+}
+
 canvas.addEventListener('mousedown', e => {
   if (mode !== 'draw' && mode !== 'arrow') return;
   isDrawing = true;
-  const r = canvas.getBoundingClientRect();
-  currentPath = [{ x: e.clientX - r.left, y: e.clientY - r.top }];
+  const pt = canvasPoint(e.clientX, e.clientY);
+  currentPath = [pt];
 });
 canvas.addEventListener('mousemove', e => {
   if (!isDrawing) return;
-  const r = canvas.getBoundingClientRect();
-  const pt = { x: e.clientX - r.left, y: e.clientY - r.top };
+  const pt = canvasPoint(e.clientX, e.clientY);
   currentPath.push(pt);
   redrawCanvas();
   drawPath({ points: currentPath, color: drawColor, size: brushSize, arrow: mode === 'arrow' });
@@ -338,21 +480,19 @@ canvas.addEventListener('mouseup', () => {
 });
 canvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
-// touch
+// touch draw
 canvas.addEventListener('touchstart', e => {
   if (mode !== 'draw' && mode !== 'arrow') return;
   e.preventDefault();
   isDrawing = true;
-  const r = canvas.getBoundingClientRect();
-  const t = e.touches[0];
-  currentPath = [{ x: t.clientX - r.left, y: t.clientY - r.top }];
+  const pt = canvasPoint(e.touches[0].clientX, e.touches[0].clientY);
+  currentPath = [pt];
 }, {passive:false});
 canvas.addEventListener('touchmove', e => {
   if (!isDrawing) return;
   e.preventDefault();
-  const r = canvas.getBoundingClientRect();
-  const t = e.touches[0];
-  currentPath.push({ x: t.clientX - r.left, y: t.clientY - r.top });
+  const pt = canvasPoint(e.touches[0].clientX, e.touches[0].clientY);
+  currentPath.push(pt);
   redrawCanvas();
   drawPath({ points: currentPath, color: drawColor, size: brushSize, arrow: mode === 'arrow' });
 }, {passive:false});
@@ -407,9 +547,10 @@ window.onObjDragStart = function(e) {
 // ── DROP ON MAP ──
 window.onDrop = function(e) {
   e.preventDefault();
-  const rect = mapArea.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const rect = zoomContainer.getBoundingClientRect();
+  // convert client coords to zoom-container local coords
+  const x = (e.clientX - rect.left) / zoomScale;
+  const y = (e.clientY - rect.top) / zoomScale;
   if (!dragSrc) return;
   if (dragSrc.type === 'obj') placeObjective(dragSrc.src, dragSrc.label, x, y);
   if (dragSrc.type === 'player') placePlayer(dragSrc.player, x, y);
@@ -423,7 +564,7 @@ function placeObjective(src, label, x, y) {
   div.style.left = x + 'px';
   div.style.top  = y + 'px';
   div.innerHTML  = `<img src="${src}"><span class="mlabel">${label}</span><button class="del-btn" onclick="removeEl(this.parentElement,'marker')">✕</button>`;
-  makeDraggable(div, 'marker-layer');
+  makeDraggable(div);
   markersLayer.appendChild(div);
   placedMarkers.push({ src, label, x, y });
 }
@@ -438,7 +579,7 @@ function placePlayer(p, x, y) {
   div.dataset.pname = p.name;
   const sideTag = p.jungleSide ? `<span class="side-tag ${p.jungleSide==='Top'?'top':'bot'}">${p.jungleSide}</span>` : '';
   div.innerHTML = `<div class="pmarker-inner ${p.role}">${initials}</div><span class="pmlabel">${p.name}</span><button class="del-btn" onclick="removeEl(this.parentElement,'player')">✕</button>`;
-  makeDraggable(div, 'player-layer');
+  makeDraggable(div);
   markersLayer.appendChild(div);
 
   // mark chip as placed
@@ -447,13 +588,14 @@ function placePlayer(p, x, y) {
 }
 
 // ── MAKE DRAGGABLE (placed markers) ──
-function makeDraggable(el, type) {
+function makeDraggable(el) {
   el.style.pointerEvents = 'all';
-  let ox, oy, sx, sy;
+  let sx, sy, ox, oy;
   const onDown = e => {
     if (e.target.classList.contains('del-btn')) return;
     if (mode !== 'select') return;
     e.preventDefault();
+    e.stopPropagation();
     const isTouch = e.type === 'touchstart';
     const cx = isTouch ? e.touches[0].clientX : e.clientX;
     const cy = isTouch ? e.touches[0].clientY : e.clientY;
@@ -461,10 +603,12 @@ function makeDraggable(el, type) {
     sy = parseFloat(el.style.top);
     ox = cx; oy = cy;
     const onMove = ev => {
+      if (ev.cancelable) ev.preventDefault();
       const mx = ev.touches ? ev.touches[0].clientX : ev.clientX;
       const my = ev.touches ? ev.touches[0].clientY : ev.clientY;
-      el.style.left = (sx + mx - ox) + 'px';
-      el.style.top  = (sy + my - oy) + 'px';
+      // divide by zoomScale so movement matches visual position
+      el.style.left = (sx + (mx - ox) / zoomScale) + 'px';
+      el.style.top  = (sy + (my - oy) / zoomScale) + 'px';
     };
     const onUp = () => {
       document.removeEventListener('mousemove', onMove);
