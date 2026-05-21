@@ -68,7 +68,9 @@ header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;let
 .pill.heal input:checked+span{border-color:var(--heal);background:rgba(39,160,106,.12);color:var(--heal)}
 .pill.tank input:checked+span{border-color:var(--tank);background:rgba(58,127,212,.12);color:var(--tank)}
 .pill.dps  input:checked+span{border-color:var(--dps);background:rgba(201,79,79,.12);color:var(--dps)}
-.pill.atk  input:checked+span{border-color:var(--atk);background:rgba(201,120,58,.12);color:var(--atk)}
+.pill.sat  input:checked+span{border-color:#7a5fd4;background:rgba(122,95,212,.12);color:#7a5fd4}
+.pill.sun  input:checked+span{border-color:#c9783a;background:rgba(201,120,58,.12);color:#c9783a}
+.pill.both input:checked+span{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
 .pill.def  input:checked+span{border-color:var(--def);background:rgba(90,122,181,.12);color:var(--def)}
 
 /* jungle */
@@ -212,6 +214,15 @@ td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
       </div>
 
       <div class="field">
+        <label>Availability</label>
+        <div class="pill-row">
+          <label class="pill sat"><input type="radio" name="avail" value="Saturday"><span>&#128197; Saturday</span></label>
+          <label class="pill sun"><input type="radio" name="avail" value="Sunday"><span>&#128198; Sunday</span></label>
+          <label class="pill both"><input type="radio" name="avail" value="Sat & Sun"><span>&#9989; Sat &amp; Sun</span></label>
+        </div>
+      </div>
+
+      <div class="field">
         <label>Jungle</label>
         <div class="jungle-wrap" id="jungle-wrap" onclick="toggleJungle()">
           <span class="jungle-label">&#127795; Can Jungle?</span>
@@ -246,6 +257,7 @@ td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
                 <th>Weapons</th>
                 <th>Role</th>
                 <th>Team</th>
+                <th>Day</th>
                 <th>Jgl</th>
               </tr>
             </thead>
@@ -385,12 +397,15 @@ window.submitForm = async function() {
   const role  = document.querySelector('input[name=role]:checked')?.value;
   const team  = document.querySelector('input[name=team]:checked')?.value;
 
+  const avail = document.querySelector('input[name=avail]:checked')?.value;
+
   if (!name)  return toast('Please enter your in-game name.', false);
   if (!w1)    return toast('Please select Weapon 1.', false);
   if (!w2)    return toast('Please select Weapon 2.', false);
   if (w1 === w2) return toast('Weapon 1 and Weapon 2 must be different.', false);
   if (!role)  return toast('Please select a role.', false);
   if (!team)  return toast('Please select a team.', false);
+  if (!avail) return toast('Please select your availability.', false);
   if (players.length >= MAX) return toast('Registration is full!', false);
   if (jungleOn && jungleCount() >= JUNGLE_MAX) return toast('Jungle is full (8/8)!', false);
 
@@ -402,7 +417,7 @@ window.submitForm = async function() {
   btn.textContent = 'Registering…';
 
   try {
-    await push(baseRef, { name, weapon1: w1, weapon2: w2, role, team, jungle: jungleOn, registeredAt: Date.now() });
+    await push(baseRef, { name, weapon1: w1, weapon2: w2, role, team, avail, jungle: jungleOn, registeredAt: Date.now() });
     resetForm();
     toast(`${name} registered successfully!`, true);
   } catch(e) {
@@ -417,7 +432,7 @@ function resetForm() {
   document.getElementById('w1').value = '';
   document.getElementById('w2').value = '';
   syncWeapons();
-  document.querySelectorAll('input[name=role], input[name=team]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[name=role], input[name=team], input[name=avail]').forEach(r => r.checked = false);
   jungleOn = false;
   document.getElementById('jungle-wrap').classList.remove('checked');
 }
@@ -475,6 +490,7 @@ function render() {
       <td class="wpn">${esc(p.weapon1)}<br><span style="color:var(--text3)">${esc(p.weapon2)}</span></td>
       <td><span class="badge ${p.role}">${p.role}</span></td>
       <td><span class="badge ${p.team === 'defend' ? 'def' : 'atk'}">${p.team}</span></td>
+      <td style="font-size:11px;color:var(--text2);white-space:nowrap">${esc(p.avail || '—')}</td>
       <td>${p.jungle ? '<span class="badge jungle">yes</span>' : '<span style="color:var(--text3)">—</span>'}</td>
     </tr>`).join('');
 }
