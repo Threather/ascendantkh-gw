@@ -40,9 +40,11 @@ header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;let
 .card-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border-hi),transparent)}
 .field{margin-bottom:1.1rem}.field:last-child{margin-bottom:0}
 .field label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:6px;font-weight:500}
-.field input[type=text]{width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s,box-shadow .2s;}
-.field input[type=text]:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+.field input[type=text], .field select{width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7e9a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:32px;}
+.field input[type=text]:focus, .field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
 .field input[type=text]::placeholder{color:var(--text3)}
+.field select option{background:var(--bg-card);color:var(--text1)}
 .pill-row{display:flex;gap:7px;flex-wrap:wrap}
 .pill{position:relative;flex:1;min-width:70px}
 .pill input{position:absolute;opacity:0;width:0;height:0}
@@ -146,8 +148,48 @@ td.num{color:var(--text3);font-size:11px;width:36px}td.ign{font-weight:500}td.we
         <input type="text" id="f-name" placeholder="Your IGN" maxlength="30" autocomplete="off">
       </div>
       <div class="field">
-        <label>Weapon</label>
-        <input type="text" id="f-weapon" placeholder="e.g. Spear, Bow, Sword…" maxlength="40" autocomplete="off">
+        <label>Weapon 1</label>
+        <select id="f-weapon1">
+          <option value="">— Select Weapon 1 —</option>
+          <option>Nameless Sword</option>
+          <option>Nameless Spear</option>
+          <option>Stormbreaker Spear</option>
+          <option>Thundercry Blade</option>
+          <option>Infernal Twinblades</option>
+          <option>Mortal Rope Dart</option>
+          <option>Vernal Umbrella</option>
+          <option>Inkwell Fan</option>
+          <option>Panacea Fan</option>
+          <option>Soulshade Umbrella</option>
+          <option>Heavenquaker Spear</option>
+          <option>Strategic Sword</option>
+          <option>Snowparting Blade</option>
+          <option>Phalanxbane Blade</option>
+          <option>Everspring Umbrella</option>
+          <option>Unfettered Rope Dart</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Weapon 2</label>
+        <select id="f-weapon2">
+          <option value="">— Select Weapon 2 —</option>
+          <option>Nameless Sword</option>
+          <option>Nameless Spear</option>
+          <option>Stormbreaker Spear</option>
+          <option>Thundercry Blade</option>
+          <option>Infernal Twinblades</option>
+          <option>Mortal Rope Dart</option>
+          <option>Vernal Umbrella</option>
+          <option>Inkwell Fan</option>
+          <option>Panacea Fan</option>
+          <option>Soulshade Umbrella</option>
+          <option>Heavenquaker Spear</option>
+          <option>Strategic Sword</option>
+          <option>Snowparting Blade</option>
+          <option>Phalanxbane Blade</option>
+          <option>Everspring Umbrella</option>
+          <option>Unfettered Rope Dart</option>
+        </select>
       </div>
       <div class="field">
         <label>Role</label>
@@ -180,7 +222,7 @@ td.num{color:var(--text3);font-size:11px;width:36px}td.ign{font-weight:500}td.we
       <div class="roster-card">
         <div class="roster-header">
           <div class="card-title" style="margin-bottom:0">Roster</div>
-          <button class="clear-btn" onclick="clearAll()">Clear All</button>
+          <!-- Clear button removed -->
         </div>
         <div class="progress-wrap">
           <div class="progress-labels">
@@ -191,7 +233,7 @@ td.num{color:var(--text3);font-size:11px;width:36px}td.ign{font-weight:500}td.we
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>#</th><th>IGN</th><th>Weapon</th><th>Role</th><th>Team</th><th>Jgl</th></tr></thead>
+            <thead><tr><th>#</th><th>IGN</th><th>Weapons</th><th>Role</th><th>Team</th><th>Jgl</th></tr></thead>
             <tbody id="roster-body">
               <tr><td colspan="6"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>
             </tbody>
@@ -253,6 +295,27 @@ onValue(baseRef, (snap) => {
   setStatus('error', 'Connection error — check database rules');
 });
 
+// ── WEAPON DUPLICATE PREVENTION ──
+function updateWeaponOptions() {
+  const w1 = document.getElementById('f-weapon1').value;
+  const w2 = document.getElementById('f-weapon2').value;
+
+  // Disable selected weapon in opposite dropdown
+  document.querySelectorAll('#f-weapon1 option, #f-weapon2 option').forEach(opt => opt.disabled = false);
+
+  if (w1) {
+    const opt2 = document.querySelector(`#f-weapon2 option[value="${w1}"]`);
+    if (opt2) opt2.disabled = true;
+  }
+  if (w2) {
+    const opt1 = document.querySelector(`#f-weapon1 option[value="${w2}"]`);
+    if (opt1) opt1.disabled = true;
+  }
+}
+
+document.getElementById('f-weapon1').addEventListener('change', updateWeaponOptions);
+document.getElementById('f-weapon2').addEventListener('change', updateWeaponOptions);
+
 // ── JUNGLE TOGGLE ──
 window.toggleJungle = function() {
   const wrap = document.getElementById('jungle-wrap');
@@ -274,12 +337,14 @@ function toast(msg, ok) {
 // ── SUBMIT ──
 window.submitForm = async function() {
   const name   = document.getElementById('f-name').value.trim();
-  const weapon = document.getElementById('f-weapon').value.trim();
+  const w1     = document.getElementById('f-weapon1').value;
+  const w2     = document.getElementById('f-weapon2').value;
   const role   = document.querySelector('input[name=role]:checked')?.value;
   const team   = document.querySelector('input[name=team]:checked')?.value;
 
   if (!name)   return toast('Please enter your in-game name.', false);
-  if (!weapon) return toast('Please enter your weapon.', false);
+  if (!w1 || !w2) return toast('Please select both weapons.', false);
+  if (w1 === w2) return toast('Weapons must be different.', false);
   if (!role)   return toast('Please select a role.', false);
   if (!team)   return toast('Please select a team.', false);
   if (players.length >= MAX) return toast('Registration is full!', false);
@@ -293,7 +358,7 @@ window.submitForm = async function() {
   btn.textContent = 'Registering…';
 
   try {
-    await push(baseRef, { name, weapon, role, team, jungle: jungleOn, registeredAt: Date.now() });
+    await push(baseRef, { name, weapon1: w1, weapon2: w2, role, team, jungle: jungleOn, registeredAt: Date.now() });
     resetForm();
     const left = MAX - players.length - 1;
     toast(`${name} registered! ${left < 0 ? 0 : left} slot${left===1?'':'s'} left.`, true);
@@ -306,7 +371,9 @@ window.submitForm = async function() {
 
 function resetForm() {
   document.getElementById('f-name').value = '';
-  document.getElementById('f-weapon').value = '';
+  document.getElementById('f-weapon1').value = '';
+  document.getElementById('f-weapon2').value = '';
+  updateWeaponOptions(); // re-enable all options
   document.querySelectorAll('input[name=role], input[name=team]').forEach(r => r.checked = false);
   jungleOn = false;
   document.getElementById('jungle-wrap').classList.remove('checked');
@@ -314,16 +381,7 @@ function resetForm() {
 
 function jungleCount() { return players.filter(p => p.jungle).length; }
 
-// ── CLEAR ALL ──
-window.clearAll = async function() {
-  if (!confirm('Clear all registrations for this week? This cannot be undone.')) return;
-  try {
-    await remove(baseRef);
-    toast('Roster cleared.', true);
-  } catch(e) {
-    toast('Failed to clear. Check your connection.', false);
-  }
-};
+// ── CLEAR ALL removed ──
 
 // ── RENDER ──
 function render() {
@@ -374,7 +432,7 @@ function render() {
     <tr>
       <td class="num">${i + 1}</td>
       <td class="ign">${esc(p.name)}</td>
-      <td class="weapon">${esc(p.weapon)}</td>
+      <td class="weapon">${esc(p.weapon1 || '?')} / ${esc(p.weapon2 || '?')}</td>
       <td><span class="badge ${p.role}">${p.role}</span></td>
       <td><span class="badge ${p.team === 'defend' ? 'def' : 'atk'}">${p.team}</span></td>
       <td>${p.jungle ? '<span class="badge jungle">yes</span>' : '<span style="color:var(--text3)">—</span>'}</td>
