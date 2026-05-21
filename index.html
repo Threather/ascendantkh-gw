@@ -347,7 +347,12 @@ function setStatus(state, text) {
 // ── REALTIME LISTENER ──
 onValue(baseRef, (snap) => {
   players = [];
-  snap.forEach(child => players.push({ _key: child.key, ...child.val() }));
+  const val = snap.val();
+  if (val) {
+    Object.entries(val).forEach(([key, data]) => {
+      players.push({ _key: key, ...data });
+    });
+  }
   setStatus('live', `Live · Week ${weekKey}`);
   render();
 }, () => {
