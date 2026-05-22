@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AscendantKH — War Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -19,106 +19,90 @@ html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--text1);font-family:'Outfit',sans-serif;font-size:14px;display:flex;flex-direction:column;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,152,58,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(201,152,58,.02) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0;}
 
-/* ── TOP BAR ── */
+/* TOP BAR */
 .topbar{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;background:var(--bg-card);border-bottom:1px solid var(--border);flex-shrink:0;gap:1rem;flex-wrap:wrap;}
 .topbar-left{display:flex;align-items:center;gap:1rem}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.08em;color:var(--text1)}
 .logo span{color:var(--gold)}
 .back-btn{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);padding:5px 12px;cursor:pointer;text-decoration:none;transition:all .18s;display:inline-flex;align-items:center;gap:5px;}
-.back-btn:hover{color:var(--text1);border-color:var(--border-hi);background:var(--bg-hover)}
+.back-btn:hover{color:var(--text1);background:var(--bg-hover)}
 .topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.tool-btn{background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);padding:6px 10px;cursor:pointer;color:var(--text2);font-size:12px;font-family:'Outfit',sans-serif;transition:all .18s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.tool-btn{background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);padding:6px 10px;cursor:pointer;color:var(--text2);font-size:12px;font-family:'Outfit',sans-serif;transition:all .18s;display:flex;align-items:center;gap:5px;white-space:nowrap;border:none;}
 .tool-btn:hover{background:var(--bg-hover);color:var(--text1)}
-.tool-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
-.tool-btn.danger:hover{background:rgba(201,79,79,.15);border-color:rgba(201,79,79,.4);color:#c94f4f}
-.divider{width:1px;height:24px;background:var(--border-hi)}
+.tool-btn.active{background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold)}
+.tool-btn.danger:hover{background:rgba(201,79,79,.15);color:#c94f4f}
+.divider{width:1px;height:24px;background:var(--border-hi);flex-shrink:0}
+.zoom-info{font-size:11px;color:var(--text3);min-width:40px;text-align:center}
 
-/* ── MAIN LAYOUT ── */
+/* MAIN */
 .main{position:relative;z-index:1;display:flex;flex:1;overflow:hidden}
 
-/* ── SIDEBAR ── */
-.sidebar{width:220px;flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;z-index:5;}
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;z-index:5;}
 .sidebar-section{padding:.875rem 1rem;border-bottom:1px solid var(--border)}
 .sidebar-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
 .sidebar-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border-hi),transparent)}
-
-/* objectives palette */
-.obj-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.obj-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 4px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-input);cursor:grab;transition:all .18s;user-select:none;}
+.obj-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.obj-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 3px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-input);cursor:grab;transition:all .18s;user-select:none;}
 .obj-item:hover{border-color:var(--gold);background:var(--gold-dim);transform:translateY(-1px)}
-.obj-item:active{cursor:grabbing;transform:scale(.95)}
-.obj-item img{width:28px;height:28px;object-fit:contain;pointer-events:none}
-.obj-item span{font-size:8px;color:var(--text3);text-align:center;line-height:1.2;letter-spacing:.04em}
+.obj-item:active{cursor:grabbing}
+.obj-item img{width:26px;height:26px;object-fit:contain;pointer-events:none}
+.obj-item span{font-size:8px;color:var(--text3);text-align:center;line-height:1.2}
 .obj-item:hover span{color:var(--gold)}
-
-/* draw tools */
 .draw-tools{display:flex;flex-direction:column;gap:6px}
-.draw-btn{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r-sm);border:1px solid var(--border-hi);background:var(--bg-input);cursor:pointer;color:var(--text2);font-size:12px;font-family:'Outfit',sans-serif;transition:all .18s;}
-.draw-btn:hover{background:var(--bg-hover);color:var(--text1)}
-.draw-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
-.color-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.color-swatch{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
-.color-swatch.active{border-color:#fff;transform:scale(1.2)}
-.size-row{display:flex;align-items:center;gap:8px;margin-top:8px}
-.size-row label{font-size:10px;color:var(--text3);letter-spacing:.06em}
+.color-row{display:flex;gap:5px;flex-wrap:wrap}
+.color-swatch{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s}
+.color-swatch.active{border-color:#fff;transform:scale(1.25)}
+.size-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.size-row label{font-size:10px;color:var(--text3)}
 .size-row input{flex:1;accent-color:var(--gold)}
-
-/* players list */
-.player-list{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto}
+.player-list{display:flex;flex-direction:column;gap:4px}
 .player-chip{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-input);cursor:grab;font-size:11px;color:var(--text1);transition:all .15s;user-select:none;}
 .player-chip:hover{border-color:var(--border-hi);background:var(--bg-hover)}
-.player-chip:active{cursor:grabbing}
-.player-chip .role-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.player-chip.placed{opacity:.4;cursor:default}
+.role-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .role-dot.heal{background:var(--heal)}.role-dot.tank{background:var(--tank)}.role-dot.dps{background:var(--dps)}
-.player-chip .pname{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.player-chip .side-tag{font-size:9px;padding:1px 5px;border-radius:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.pname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.side-tag{font-size:9px;padding:1px 5px;border-radius:10px;font-weight:600;white-space:nowrap}
 .side-tag.top{background:rgba(58,127,212,.2);color:#5aaaf5}
 .side-tag.bot{background:rgba(201,120,58,.2);color:#e8943a}
 .no-players{font-size:11px;color:var(--text3);text-align:center;padding:.75rem 0}
 
-/* ── MAP CANVAS AREA ── */
-.map-area{flex:1;position:relative;overflow:hidden;background:#080a0f;cursor:grab;}
-.map-area.panning{cursor:grabbing;}
-#zoom-container{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform;}
+/* MAP VIEWPORT */
+.map-viewport{flex:1;position:relative;overflow:hidden;background:#080a0f;cursor:grab;}
+.map-viewport.grabbing{cursor:grabbing}
+.map-viewport.drawing{cursor:crosshair}
+
+/* MAP WORLD — this is what gets scaled/translated */
+#map-world{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform;}
 #map-canvas{display:block;}
+#markers-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
 
-/* zoom controls */
-.zoom-controls{position:absolute;bottom:50px;right:14px;display:flex;flex-direction:column;gap:4px;z-index:30;}
-.zoom-btn{width:30px;height:30px;border-radius:var(--r-sm);background:var(--bg-card);border:1px solid var(--border-hi);color:var(--text1);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.zoom-btn:hover{background:var(--bg-hover);border-color:var(--gold);color:var(--gold)}
-.zoom-label{font-size:9px;color:var(--text2);text-align:center;letter-spacing:.04em;}
+/* MARKERS */
+.marker{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:all;cursor:move;user-select:none;z-index:20;}
+.marker:hover img{filter:drop-shadow(0 0 6px var(--gold))}
+.marker img{width:36px;height:36px;object-fit:contain;pointer-events:none;display:block;}
+.marker .mlabel{font-size:9px;font-weight:600;color:#fff;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:10px;white-space:nowrap;pointer-events:none;}
+.del-btn{position:absolute;top:-8px;right:-8px;width:16px;height:16px;border-radius:50%;background:#c94f4f;border:none;color:#fff;font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:30;line-height:1;}
+.marker:hover .del-btn{display:flex}
 
-/* ── PLACED MARKER ── */
-.marker{position:absolute;transform:translate(-50%,-50%);cursor:move;user-select:none;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:20;transition:filter .15s;pointer-events:all;}
-.marker:hover{filter:drop-shadow(0 0 6px var(--gold))}
-.marker img{width:36px;height:36px;object-fit:contain;pointer-events:none}
-.marker .mlabel{font-size:9px;font-weight:600;color:#fff;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:10px;white-space:nowrap;pointer-events:none;letter-spacing:.04em}
-.marker.selected{filter:drop-shadow(0 0 8px #fff)}
-.marker .del-btn{position:absolute;top:-8px;right:-8px;width:16px;height:16px;border-radius:50%;background:#c94f4f;border:none;color:#fff;font-size:10px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;}
-.marker:hover .del-btn,.marker.selected .del-btn{display:flex}
-
-/* player marker */
-.pmarker{position:absolute;transform:translate(-50%,-50%);cursor:move;user-select:none;z-index:21;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:all;}
-.pmarker:hover .pmarker-inner{box-shadow:0 0 0 2px var(--gold)}
-.pmarker-inner{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.3);transition:box-shadow .15s;}
+/* PLAYER MARKERS */
+.pmarker{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:all;cursor:move;user-select:none;z-index:21;}
+.pmarker-inner{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.3);transition:box-shadow .15s;pointer-events:none;}
 .pmarker-inner.heal{background:var(--heal)}.pmarker-inner.tank{background:var(--tank)}.pmarker-inner.dps{background:var(--dps)}
-.pmarker .pmlabel{font-size:8px;font-weight:600;color:#fff;background:rgba(0,0,0,.75);padding:1px 5px;border-radius:10px;white-space:nowrap;pointer-events:none;max-width:70px;overflow:hidden;text-overflow:ellipsis;}
-.pmarker .del-btn{position:absolute;top:-6px;right:-6px;width:14px;height:14px;border-radius:50%;background:#c94f4f;border:none;color:#fff;font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.pmarker:hover .pmarker-inner{box-shadow:0 0 0 3px var(--gold)}
+.pmarker .pmlabel{font-size:8px;font-weight:600;color:#fff;background:rgba(0,0,0,.75);padding:1px 5px;border-radius:10px;white-space:nowrap;pointer-events:none;max-width:72px;overflow:hidden;text-overflow:ellipsis;}
+.pmarker .del-btn{top:-6px;right:-6px;width:14px;height:14px;font-size:9px;}
 .pmarker:hover .del-btn{display:flex}
 
-/* ── STATUS BAR ── */
-.statusbar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(13,15,20,.85);backdrop-filter:blur(8px);border:1px solid var(--border-hi);border-radius:20px;padding:5px 14px;font-size:11px;color:var(--text2);z-index:30;pointer-events:none;letter-spacing:.04em}
+/* STATUS */
+.statusbar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(13,15,20,.85);backdrop-filter:blur(8px);border:1px solid var(--border-hi);border-radius:20px;padding:5px 14px;font-size:11px;color:var(--text2);z-index:30;pointer-events:none;letter-spacing:.04em;white-space:nowrap;}
 
-/* ── TOAST ── */
-.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-120%);background:var(--bg-card);border:1px solid var(--border-hi);border-radius:var(--r);padding:.6rem 1.1rem;font-size:12px;font-weight:500;display:flex;align-items:center;gap:7px;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
+/* TOAST */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-120%);background:var(--bg-card);border:1px solid var(--border-hi);border-radius:var(--r);padding:.6rem 1.1rem;font-size:12px;font-weight:500;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(39,160,106,.4);color:var(--heal)}
 .toast.err{border-color:rgba(201,79,79,.4);color:#c94f4f}
-
-@media(max-width:600px){
-  .sidebar{width:160px}
-  .obj-grid{grid-template-columns:repeat(3,1fr)}
-}
 </style>
 </head>
 <body>
@@ -132,9 +116,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="logo">AscendantKH <span>War Map</span></div>
   </div>
   <div class="topbar-right">
+    <button class="tool-btn active" id="btn-select" onclick="setMode('select')">↖ Select</button>
+    <button class="tool-btn" id="btn-pan" onclick="setMode('pan')">✋ Pan</button>
     <button class="tool-btn" id="btn-draw" onclick="setMode('draw')">✏️ Draw</button>
     <button class="tool-btn" id="btn-arrow" onclick="setMode('arrow')">➡️ Arrow</button>
-    <button class="tool-btn active" id="btn-select" onclick="setMode('select')">↖ Select</button>
+    <div class="divider"></div>
+    <button class="tool-btn" onclick="zoomIn()">＋</button>
+    <span class="zoom-info" id="zoom-info">100%</span>
+    <button class="tool-btn" onclick="zoomOut()">－</button>
+    <button class="tool-btn" onclick="resetZoom()">⌂</button>
     <div class="divider"></div>
     <button class="tool-btn" onclick="undoLast()">↶ Undo</button>
     <button class="tool-btn danger" onclick="clearAll()">🧹 Clear</button>
@@ -146,39 +136,35 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 <!-- MAIN -->
 <div class="main">
-
-  <!-- SIDEBAR -->
   <div class="sidebar">
 
-    <!-- OBJECTIVES -->
     <div class="sidebar-section">
       <div class="sidebar-label">Objectives</div>
-      <div class="obj-grid">
-        <div class="obj-item" draggable="true" data-type="obj" data-src="objective/boss.png" data-label="Boss" ondragstart="onObjDragStart(event)">
-          <img src="objective/boss.png" alt="Boss"><span>Boss</span>
+      <div class="obj-grid" id="obj-grid">
+        <div class="obj-item" draggable="true" data-src="objective/boss.png" data-label="Boss" ondragstart="objDragStart(event)">
+          <img src="objective/boss.png"><span>Boss</span>
         </div>
-        <div class="obj-item" draggable="true" data-type="obj" data-src="objective/tower_blue.png" data-label="Tower A" ondragstart="onObjDragStart(event)">
-          <img src="objective/tower_blue.png" alt="Tower A"><span>Tower A</span>
+        <div class="obj-item" draggable="true" data-src="objective/tower_blue.png" data-label="Tower A" ondragstart="objDragStart(event)">
+          <img src="objective/tower_blue.png"><span>Tower A</span>
         </div>
-        <div class="obj-item" draggable="true" data-type="obj" data-src="objective/tower_red.png" data-label="Tower E" ondragstart="onObjDragStart(event)">
-          <img src="objective/tower_red.png" alt="Tower E"><span>Tower E</span>
+        <div class="obj-item" draggable="true" data-src="objective/tower_red.png" data-label="Tower E" ondragstart="objDragStart(event)">
+          <img src="objective/tower_red.png"><span>Tower E</span>
         </div>
-        <div class="obj-item" draggable="true" data-type="obj" data-src="objective/tree_blue.png" data-label="Tree A" ondragstart="onObjDragStart(event)">
-          <img src="objective/tree_blue.png" alt="Tree A"><span>Tree A</span>
+        <div class="obj-item" draggable="true" data-src="objective/tree_blue.png" data-label="Tree A" ondragstart="objDragStart(event)">
+          <img src="objective/tree_blue.png"><span>Tree A</span>
         </div>
-        <div class="obj-item" draggable="true" data-type="obj" data-src="objective/tree_red.png" data-label="Tree E" ondragstart="onObjDragStart(event)">
-          <img src="objective/tree_red.png" alt="Tree E"><span>Tree E</span>
+        <div class="obj-item" draggable="true" data-src="objective/tree_red.png" data-label="Tree E" ondragstart="objDragStart(event)">
+          <img src="objective/tree_red.png"><span>Tree E</span>
         </div>
-        <div class="obj-item" draggable="true" data-type="obj" data-src="objective/goose_blue.png" data-label="Goose A" ondragstart="onObjDragStart(event)">
-          <img src="objective/goose_blue.png" alt="Goose A"><span>Goose A</span>
+        <div class="obj-item" draggable="true" data-src="objective/goose_blue.png" data-label="Goose A" ondragstart="objDragStart(event)">
+          <img src="objective/goose_blue.png"><span>Goose A</span>
         </div>
-        <div class="obj-item" draggable="true" data-type="obj" data-src="objective/goose_red.png" data-label="Goose E" ondragstart="onObjDragStart(event)">
-          <img src="objective/goose_red.png" alt="Goose E"><span>Goose E</span>
+        <div class="obj-item" draggable="true" data-src="objective/goose_red.png" data-label="Goose E" ondragstart="objDragStart(event)">
+          <img src="objective/goose_red.png"><span>Goose E</span>
         </div>
       </div>
     </div>
 
-    <!-- DRAW OPTIONS -->
     <div class="sidebar-section">
       <div class="sidebar-label">Draw</div>
       <div class="draw-tools">
@@ -197,35 +183,29 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
 
-    <!-- PLAYERS -->
-    <div class="sidebar-section" style="flex:1">
+    <div class="sidebar-section" style="flex:1;overflow-y:auto">
       <div class="sidebar-label">Players</div>
       <div class="player-list" id="player-list">
-        <div class="no-players" id="no-players">Loading roster…</div>
+        <div class="no-players">Loading…</div>
       </div>
     </div>
 
   </div>
 
-  <!-- MAP AREA -->
-  <div class="map-area" id="map-area"
+  <!-- MAP VIEWPORT -->
+  <div class="map-viewport" id="map-viewport"
     ondragover="event.preventDefault()"
     ondrop="onDrop(event)">
-    <div id="zoom-container">
+
+    <!-- WORLD: canvas + markers together, both get zoomed/panned -->
+    <div id="map-world">
       <canvas id="map-canvas"></canvas>
-      <div id="markers-layer" style="position:absolute;top:0;left:0;pointer-events:all;z-index:15"></div>
+      <div id="markers-layer"></div>
     </div>
-    <div class="zoom-controls">
-      <button class="zoom-btn" onclick="adjustZoom(0.2)" title="Zoom in">+</button>
-      <div class="zoom-label" id="zoom-label">100%</div>
-      <button class="zoom-btn" onclick="adjustZoom(-0.2)" title="Zoom out">−</button>
-      <button class="zoom-btn" onclick="resetZoom()" title="Reset zoom" style="font-size:11px">⌂</button>
-    </div>
+
+    <div class="statusbar" id="statusbar">↖ Select — drag objectives or players · Scroll to zoom · Pan with ✋</div>
   </div>
-
 </div>
-
-<div class="statusbar" id="statusbar">↖ Select mode — drag objectives or players onto the map</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -240,7 +220,6 @@ const firebaseConfig = {
   messagingSenderId: "181758417135",
   appId: "1:181758417135:web:aada38d84e8ddd977ba31a"
 };
-
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
@@ -256,166 +235,59 @@ function getWeekKey() {
 let mode = 'select';
 let drawColor = '#c9983a';
 let brushSize = 4;
-let isDrawing = false;
 let drawHistory = [];
 let currentPath = [];
-let placedMarkers = [];
-let placedPlayers = [];
+let isDrawing = false;
 let dragSrc = null;
-let dragOffset = {x:0,y:0};
-
-// ── CANVAS SETUP ──
-const canvas = document.getElementById('map-canvas');
-const ctx    = canvas.getContext('2d');
-const mapArea = document.getElementById('map-area');
-const markersLayer = document.getElementById('markers-layer');
-const zoomContainer = document.getElementById('zoom-container');
 
 // ── ZOOM / PAN STATE ──
-let zoomScale = 1;
-let panX = 0, panY = 0;
+let zoom = 1;
+let panX = 0;
+let panY = 0;
 let isPanning = false;
-let panStartX = 0, panStartY = 0, panStartPanX = 0, panStartPanY = 0;
-let lastPinchDist = null;
+let panStart = { x: 0, y: 0 };
+let panOrigin = { x: 0, y: 0 };
+
+const viewport  = document.getElementById('map-viewport');
+const world     = document.getElementById('map-world');
+const canvas    = document.getElementById('map-canvas');
+const ctx       = canvas.getContext('2d');
+const markersLayer = document.getElementById('markers-layer');
+
+// ── MAP IMAGE ──
+const mapImg = new Image();
+mapImg.crossOrigin = 'anonymous';
+mapImg.src = 'https://raw.githubusercontent.com/Threather/ascendantkh-gw/main/map.png';
+mapImg.onload = () => {
+  canvas.width  = mapImg.naturalWidth;
+  canvas.height = mapImg.naturalHeight;
+  markersLayer.style.width  = canvas.width  + 'px';
+  markersLayer.style.height = canvas.height + 'px';
+  world.style.width  = canvas.width  + 'px';
+  world.style.height = canvas.height + 'px';
+  // fit map to viewport on load
+  const vw = viewport.clientWidth;
+  const vh = viewport.clientHeight;
+  const fitZoom = Math.min(vw / canvas.width, vh / canvas.height) * 0.95;
+  zoom = fitZoom;
+  panX = (vw - canvas.width  * zoom) / 2;
+  panY = (vh - canvas.height * zoom) / 2;
+  applyTransform();
+  redrawCanvas();
+};
+mapImg.onerror = () => showToast('map.png not found — check your repo', false);
 
 function applyTransform() {
-  zoomContainer.style.transform = `translate(${panX}px,${panY}px) scale(${zoomScale})`;
-  document.getElementById('zoom-label').textContent = Math.round(zoomScale * 100) + '%';
+  world.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  document.getElementById('zoom-info').textContent = Math.round(zoom * 100) + '%';
 }
-
-window.adjustZoom = function(delta) {
-  const newScale = Math.min(4, Math.max(0.3, zoomScale + delta));
-  // zoom toward center of map area
-  const cx = mapArea.clientWidth / 2;
-  const cy = mapArea.clientHeight / 2;
-  panX = cx - (cx - panX) * (newScale / zoomScale);
-  panY = cy - (cy - panY) * (newScale / zoomScale);
-  zoomScale = newScale;
-  applyTransform();
-};
-
-window.resetZoom = function() {
-  zoomScale = 1; panX = 0; panY = 0;
-  applyTransform();
-};
-
-// mouse wheel zoom
-mapArea.addEventListener('wheel', e => {
-  e.preventDefault();
-  const delta = e.deltaY < 0 ? 0.12 : -0.12;
-  const rect = mapArea.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  const newScale = Math.min(4, Math.max(0.3, zoomScale + delta));
-  panX = mx - (mx - panX) * (newScale / zoomScale);
-  panY = my - (my - panY) * (newScale / zoomScale);
-  zoomScale = newScale;
-  applyTransform();
-}, { passive: false });
-
-// middle-mouse / space+drag pan — also right-click pan
-mapArea.addEventListener('mousedown', e => {
-  // pan on middle mouse OR when in select mode (but not on markers)
-  if (e.button === 1 || (e.button === 2)) {
-    e.preventDefault();
-    isPanning = true;
-    panStartX = e.clientX; panStartY = e.clientY;
-    panStartPanX = panX; panStartPanY = panY;
-    mapArea.classList.add('panning');
-  }
-});
-// pan with left mouse on canvas only (not markers) in select mode
-mapArea.addEventListener('mousedown', e => {
-  if (e.button !== 0) return;
-  if (e.target !== canvas) return; // only on canvas background
-  if (mode !== 'select') return;
-  isPanning = true;
-  panStartX = e.clientX; panStartY = e.clientY;
-  panStartPanX = panX; panStartPanY = panY;
-  mapArea.classList.add('panning');
-});
-document.addEventListener('mousemove', e => {
-  if (!isPanning) return;
-  panX = panStartPanX + (e.clientX - panStartX);
-  panY = panStartPanY + (e.clientY - panStartY);
-  applyTransform();
-});
-document.addEventListener('mouseup', () => {
-  isPanning = false;
-  mapArea.classList.remove('panning');
-});
-mapArea.addEventListener('contextmenu', e => e.preventDefault());
-
-// pinch-to-zoom (touch)
-mapArea.addEventListener('touchstart', e => {
-  if (e.touches.length === 2) {
-    lastPinchDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-  } else if (e.touches.length === 1 && mode === 'select') {
-    // single-finger pan in select mode if not touching a marker
-    if (e.target === canvas || e.target === zoomContainer || e.target === markersLayer) {
-      isPanning = true;
-      panStartX = e.touches[0].clientX; panStartY = e.touches[0].clientY;
-      panStartPanX = panX; panStartPanY = panY;
-    }
-  }
-}, { passive: true });
-mapArea.addEventListener('touchmove', e => {
-  if (e.touches.length === 2) {
-    e.preventDefault();
-    const dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    if (lastPinchDist) {
-      const delta = (dist - lastPinchDist) * 0.008;
-      const rect = mapArea.getBoundingClientRect();
-      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-      const newScale = Math.min(4, Math.max(0.3, zoomScale + delta));
-      panX = mx - (mx - panX) * (newScale / zoomScale);
-      panY = my - (my - panY) * (newScale / zoomScale);
-      zoomScale = newScale;
-      applyTransform();
-    }
-    lastPinchDist = dist;
-  } else if (isPanning && e.touches.length === 1) {
-    e.preventDefault();
-    panX = panStartPanX + (e.touches[0].clientX - panStartX);
-    panY = panStartPanY + (e.touches[0].clientY - panStartY);
-    applyTransform();
-  }
-}, { passive: false });
-mapArea.addEventListener('touchend', e => {
-  if (e.touches.length < 2) lastPinchDist = null;
-  if (e.touches.length === 0) { isPanning = false; }
-});
-
-const mapImg = new Image();
-mapImg.src = 'https://raw.githubusercontent.com/Threather/ascendantkh-gw/main/map.png';
-mapImg.onload = () => { resizeCanvas(); };
-mapImg.onerror = () => { toast('map.png not found in repo', false); };
-
-function resizeCanvas() {
-  canvas.width  = mapArea.clientWidth;
-  canvas.height = mapArea.clientHeight;
-  redrawCanvas();
-}
-window.addEventListener('resize', resizeCanvas);
 
 function redrawCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (mapImg.complete && mapImg.naturalWidth) {
-    const scale = Math.max(canvas.width / mapImg.naturalWidth, canvas.height / mapImg.naturalHeight);
-    const w = mapImg.naturalWidth  * scale;
-    const h = mapImg.naturalHeight * scale;
-    const x = (canvas.width  - w) / 2;
-    const y = (canvas.height - h) / 2;
-    ctx.drawImage(mapImg, x, y, w, h);
+    ctx.drawImage(mapImg, 0, 0);
   }
-  drawHistory.forEach(path => drawPath(path));
+  drawHistory.forEach(p => drawPath(p));
 }
 
 function drawPath(path) {
@@ -425,17 +297,15 @@ function drawPath(path) {
   ctx.lineWidth   = path.size;
   ctx.lineCap     = 'round';
   ctx.lineJoin    = 'round';
+  ctx.moveTo(path.points[0].x, path.points[0].y);
+  path.points.forEach(pt => ctx.lineTo(pt.x, pt.y));
+  ctx.stroke();
   if (path.arrow) {
-    // draw arrow line
-    const pts = path.points;
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-    ctx.stroke();
-    // arrowhead
+    const pts   = path.points;
     const last  = pts[pts.length - 1];
     const prev  = pts[pts.length - 2] || pts[0];
     const angle = Math.atan2(last.y - prev.y, last.x - prev.x);
-    const len   = 14;
+    const len   = 18 / zoom;
     ctx.beginPath();
     ctx.moveTo(last.x, last.y);
     ctx.lineTo(last.x - len * Math.cos(angle - 0.4), last.y - len * Math.sin(angle - 0.4));
@@ -443,279 +313,332 @@ function drawPath(path) {
     ctx.closePath();
     ctx.fillStyle = path.color;
     ctx.fill();
-  } else {
-    ctx.moveTo(path.points[0].x, path.points[0].y);
-    for (let i = 1; i < path.points.length; i++) ctx.lineTo(path.points[i].x, path.points[i].y);
-    ctx.stroke();
   }
 }
 
-// ── CANVAS EVENTS (drawing — account for zoom) ──
-function canvasPoint(clientX, clientY) {
-  const r = canvas.getBoundingClientRect();
-  // getBoundingClientRect already accounts for CSS transform, so this is correct
-  return { x: (clientX - r.left), y: (clientY - r.top) };
+// Convert viewport coords → canvas (world) coords
+function toWorld(cx, cy) {
+  return {
+    x: (cx - panX) / zoom,
+    y: (cy - panY) / zoom
+  };
+}
+
+// ── ZOOM ──
+window.zoomIn    = () => { doZoom(1.2, viewport.clientWidth/2, viewport.clientHeight/2); };
+window.zoomOut   = () => { doZoom(0.8, viewport.clientWidth/2, viewport.clientHeight/2); };
+window.resetZoom = () => {
+  const vw = viewport.clientWidth, vh = viewport.clientHeight;
+  zoom = Math.min(vw / canvas.width, vh / canvas.height) * 0.95;
+  panX = (vw - canvas.width  * zoom) / 2;
+  panY = (vh - canvas.height * zoom) / 2;
+  applyTransform();
+};
+
+function doZoom(factor, cx, cy) {
+  const newZoom = Math.min(Math.max(zoom * factor, 0.15), 6);
+  panX = cx - (cx - panX) * (newZoom / zoom);
+  panY = cy - (cy - panY) * (newZoom / zoom);
+  zoom = newZoom;
+  applyTransform();
+}
+
+// Mouse wheel zoom
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  doZoom(e.deltaY < 0 ? 1.12 : 0.9, e.clientX - rect.left, e.clientY - rect.top);
+}, { passive: false });
+
+// Pinch zoom (touch)
+let lastPinchDist = null;
+viewport.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    lastPinchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+}, { passive: true });
+viewport.addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    if (lastPinchDist) {
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const rect = viewport.getBoundingClientRect();
+      doZoom(dist / lastPinchDist, midX - rect.left, midY - rect.top);
+    }
+    lastPinchDist = dist;
+  }
+}, { passive: false });
+viewport.addEventListener('touchend', () => { lastPinchDist = null; });
+
+// ── PAN (mouse) ──
+viewport.addEventListener('mousedown', e => {
+  if (mode === 'pan' || e.button === 1) {
+    isPanning = true;
+    panStart  = { x: e.clientX, y: e.clientY };
+    panOrigin = { x: panX, y: panY };
+    viewport.classList.add('grabbing');
+    e.preventDefault();
+  }
+});
+window.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  panX = panOrigin.x + (e.clientX - panStart.x);
+  panY = panOrigin.y + (e.clientY - panStart.y);
+  applyTransform();
+});
+window.addEventListener('mouseup', () => {
+  if (isPanning) { isPanning = false; viewport.classList.remove('grabbing'); }
+});
+
+// PAN (touch single finger in pan mode)
+viewport.addEventListener('touchstart', e => {
+  if (mode === 'pan' && e.touches.length === 1) {
+    isPanning = true;
+    panStart  = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    panOrigin = { x: panX, y: panY };
+  }
+}, { passive: true });
+viewport.addEventListener('touchmove', e => {
+  if (isPanning && e.touches.length === 1) {
+    panX = panOrigin.x + (e.touches[0].clientX - panStart.x);
+    panY = panOrigin.y + (e.touches[0].clientY - panStart.y);
+    applyTransform();
+  }
+}, { passive: true });
+viewport.addEventListener('touchend', () => { isPanning = false; });
+
+// ── DRAW ──
+function getCanvasPoint(e) {
+  const rect = viewport.getBoundingClientRect();
+  const cx = (e.clientX ?? e.touches[0].clientX) - rect.left;
+  const cy = (e.clientY ?? e.touches[0].clientY) - rect.top;
+  return toWorld(cx, cy);
 }
 
 canvas.addEventListener('mousedown', e => {
   if (mode !== 'draw' && mode !== 'arrow') return;
   isDrawing = true;
-  const pt = canvasPoint(e.clientX, e.clientY);
-  currentPath = [pt];
+  currentPath = [getCanvasPoint(e)];
 });
 canvas.addEventListener('mousemove', e => {
   if (!isDrawing) return;
-  const pt = canvasPoint(e.clientX, e.clientY);
-  currentPath.push(pt);
+  currentPath.push(getCanvasPoint(e));
   redrawCanvas();
-  drawPath({ points: currentPath, color: drawColor, size: brushSize, arrow: mode === 'arrow' });
+  drawPath({ points: currentPath, color: drawColor, size: brushSize / zoom, arrow: mode === 'arrow' });
 });
 canvas.addEventListener('mouseup', () => {
   if (!isDrawing) return;
   isDrawing = false;
-  if (currentPath.length > 1) {
-    drawHistory.push({ points: [...currentPath], color: drawColor, size: brushSize, arrow: mode === 'arrow' });
-  }
+  if (currentPath.length > 1) drawHistory.push({ points:[...currentPath], color:drawColor, size:brushSize/zoom, arrow:mode==='arrow' });
   currentPath = [];
+  redrawCanvas();
 });
 canvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
-// touch draw
-canvas.addEventListener('touchstart', e => {
-  if (mode !== 'draw' && mode !== 'arrow') return;
+// ── DRAG FROM SIDEBAR ──
+window.objDragStart = function(e) {
+  dragSrc = { type:'obj', src: e.currentTarget.dataset.src, label: e.currentTarget.dataset.label };
+  e.dataTransfer.effectAllowed = 'copy';
+};
+
+// ── DROP ON VIEWPORT ──
+window.onDrop = function(e) {
   e.preventDefault();
-  isDrawing = true;
-  const pt = canvasPoint(e.touches[0].clientX, e.touches[0].clientY);
-  currentPath = [pt];
-}, {passive:false});
-canvas.addEventListener('touchmove', e => {
-  if (!isDrawing) return;
-  e.preventDefault();
-  const pt = canvasPoint(e.touches[0].clientX, e.touches[0].clientY);
-  currentPath.push(pt);
-  redrawCanvas();
-  drawPath({ points: currentPath, color: drawColor, size: brushSize, arrow: mode === 'arrow' });
-}, {passive:false});
-canvas.addEventListener('touchend', () => {
-  if (!isDrawing) return;
-  isDrawing = false;
-  if (currentPath.length > 1) drawHistory.push({ points:[...currentPath], color:drawColor, size:brushSize, arrow:mode==='arrow' });
-  currentPath = [];
-});
+  if (!dragSrc) return;
+  const rect = viewport.getBoundingClientRect();
+  const wx   = (e.clientX - rect.left - panX) / zoom;
+  const wy   = (e.clientY - rect.top  - panY) / zoom;
+  if (dragSrc.type === 'obj')    placeObj(dragSrc.src, dragSrc.label, wx, wy);
+  if (dragSrc.type === 'player') placePly(dragSrc.player, wx, wy);
+  dragSrc = null;
+};
+
+// ── PLACE OBJECTIVE ──
+function placeObj(src, label, wx, wy) {
+  const el = document.createElement('div');
+  el.className = 'marker';
+  el.style.left = wx + 'px';
+  el.style.top  = wy + 'px';
+  el.innerHTML = `<img src="${src}"><span class="mlabel">${label}</span><button class="del-btn" onclick="this.parentElement.remove()">✕</button>`;
+  makeDraggable(el);
+  markersLayer.appendChild(el);
+}
+
+// ── PLACE PLAYER ──
+function placePly(p, wx, wy) {
+  // remove old marker if re-placing
+  const old = markersLayer.querySelector(`.pmarker[data-name="${p.name}"]`);
+  if (old) old.remove();
+
+  const el = document.createElement('div');
+  el.className = 'pmarker';
+  el.dataset.name = p.name;
+  el.style.left   = wx + 'px';
+  el.style.top    = wy + 'px';
+  const initials  = p.name.slice(0,2).toUpperCase();
+  el.innerHTML = `<div class="pmarker-inner ${p.role}">${initials}</div><span class="pmlabel">${p.name}</span><button class="del-btn" onclick="removePly(this)">✕</button>`;
+  makeDraggable(el);
+  markersLayer.appendChild(el);
+
+  const chip = document.querySelector(`.player-chip[data-name="${p.name}"]`);
+  if (chip) chip.classList.add('placed');
+}
+
+window.removePly = function(btn) {
+  const el   = btn.parentElement;
+  const name = el.dataset.name;
+  el.remove();
+  const chip = document.querySelector(`.player-chip[data-name="${name}"]`);
+  if (chip) chip.classList.remove('placed');
+};
+
+// ── MAKE MARKER DRAGGABLE (inside world coords) ──
+function makeDraggable(el) {
+  let startX, startY, startLeft, startTop;
+
+  const onDown = e => {
+    if (e.target.classList.contains('del-btn')) return;
+    if (mode !== 'select') return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isTouch = e.touches;
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+    startX    = clientX;
+    startY    = clientY;
+    startLeft = parseFloat(el.style.left);
+    startTop  = parseFloat(el.style.top);
+
+    const onMove = ev => {
+      const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+      // delta in viewport px → convert to world coords by dividing by zoom
+      el.style.left = (startLeft + (cx - startX) / zoom) + 'px';
+      el.style.top  = (startTop  + (cy - startY) / zoom) + 'px';
+    };
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onUp);
+  };
+
+  el.addEventListener('mousedown', onDown);
+  el.addEventListener('touchstart', onDown, { passive: false });
+}
 
 // ── MODE ──
 window.setMode = function(m) {
   mode = m;
-  document.getElementById('btn-draw').classList.toggle('active', m === 'draw');
-  document.getElementById('btn-arrow').classList.toggle('active', m === 'arrow');
-  document.getElementById('btn-select').classList.toggle('active', m === 'select');
-  canvas.style.cursor = (m === 'draw' || m === 'arrow') ? 'crosshair' : 'default';
-  const hints = { draw:'✏️ Draw mode — draw freely on the map', arrow:'➡️ Arrow mode — draw directional arrows', select:'↖ Select mode — drag objectives or players onto the map' };
+  ['select','pan','draw','arrow'].forEach(id => {
+    document.getElementById('btn-'+id)?.classList.toggle('active', id === m);
+  });
+  viewport.classList.toggle('drawing', m === 'draw' || m === 'arrow');
+  const hints = {
+    select: '↖ Select — drag markers to move · Drag objectives & players from sidebar',
+    pan:    '✋ Pan — click and drag to move the map',
+    draw:   '✏️ Draw — freehand drawing',
+    arrow:  '➡️ Arrow — draw directional arrows'
+  };
   document.getElementById('statusbar').textContent = hints[m];
 };
 
-// ── COLOR ──
 window.setColor = function(el) {
   document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
   drawColor = el.dataset.color;
 };
 
-// ── UNDO ──
 window.undoLast = function() {
-  if (drawHistory.length === 0) return;
+  if (!drawHistory.length) return;
   drawHistory.pop();
   redrawCanvas();
 };
 
-// ── CLEAR ──
 window.clearAll = function() {
   if (!confirm('Clear all drawings and markers?')) return;
   drawHistory = [];
-  placedMarkers = [];
-  placedPlayers = [];
   markersLayer.innerHTML = '';
+  document.querySelectorAll('.player-chip').forEach(c => c.classList.remove('placed'));
   redrawCanvas();
 };
 
-// ── DRAG FROM SIDEBAR (objectives) ──
-window.onObjDragStart = function(e) {
-  dragSrc = { type: 'obj', src: e.currentTarget.dataset.src, label: e.currentTarget.dataset.label };
-  e.dataTransfer.effectAllowed = 'copy';
-};
-
-// ── DROP ON MAP ──
-window.onDrop = function(e) {
-  e.preventDefault();
-  const rect = zoomContainer.getBoundingClientRect();
-  // convert client coords to zoom-container local coords
-  const x = (e.clientX - rect.left) / zoomScale;
-  const y = (e.clientY - rect.top) / zoomScale;
-  if (!dragSrc) return;
-  if (dragSrc.type === 'obj') placeObjective(dragSrc.src, dragSrc.label, x, y);
-  if (dragSrc.type === 'player') placePlayer(dragSrc.player, x, y);
-  dragSrc = null;
-};
-
-// ── PLACE OBJECTIVE MARKER ──
-function placeObjective(src, label, x, y) {
-  const div = document.createElement('div');
-  div.className = 'marker';
-  div.style.left = x + 'px';
-  div.style.top  = y + 'px';
-  div.innerHTML  = `<img src="${src}"><span class="mlabel">${label}</span><button class="del-btn" onclick="removeEl(this.parentElement,'marker')">✕</button>`;
-  makeDraggable(div);
-  markersLayer.appendChild(div);
-  placedMarkers.push({ src, label, x, y });
-}
-
-// ── PLACE PLAYER MARKER ──
-function placePlayer(p, x, y) {
-  const initials = p.name.slice(0,2).toUpperCase();
-  const div = document.createElement('div');
-  div.className = 'pmarker';
-  div.style.left = x + 'px';
-  div.style.top  = y + 'px';
-  div.dataset.pname = p.name;
-  const sideTag = p.jungleSide ? `<span class="side-tag ${p.jungleSide==='Top'?'top':'bot'}">${p.jungleSide}</span>` : '';
-  div.innerHTML = `<div class="pmarker-inner ${p.role}">${initials}</div><span class="pmlabel">${p.name}</span><button class="del-btn" onclick="removeEl(this.parentElement,'player')">✕</button>`;
-  makeDraggable(div);
-  markersLayer.appendChild(div);
-
-  // mark chip as placed
-  const chip = document.querySelector(`.player-chip[data-name="${p.name}"]`);
-  if (chip) chip.style.opacity = '.4';
-}
-
-// ── MAKE DRAGGABLE (placed markers) ──
-function makeDraggable(el) {
-  el.style.pointerEvents = 'all';
-  let sx, sy, ox, oy;
-  const onDown = e => {
-    if (e.target.classList.contains('del-btn')) return;
-    if (mode !== 'select') return;
-    e.preventDefault();
-    e.stopPropagation();
-    const isTouch = e.type === 'touchstart';
-    const cx = isTouch ? e.touches[0].clientX : e.clientX;
-    const cy = isTouch ? e.touches[0].clientY : e.clientY;
-    sx = parseFloat(el.style.left);
-    sy = parseFloat(el.style.top);
-    ox = cx; oy = cy;
-    const onMove = ev => {
-      if (ev.cancelable) ev.preventDefault();
-      const mx = ev.touches ? ev.touches[0].clientX : ev.clientX;
-      const my = ev.touches ? ev.touches[0].clientY : ev.clientY;
-      // divide by zoomScale so movement matches visual position
-      el.style.left = (sx + (mx - ox) / zoomScale) + 'px';
-      el.style.top  = (sy + (my - oy) / zoomScale) + 'px';
-    };
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onUp);
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-    document.addEventListener('touchmove', onMove, {passive:false});
-    document.addEventListener('touchend', onUp);
-  };
-  el.addEventListener('mousedown', onDown);
-  el.addEventListener('touchstart', onDown, {passive:false});
-}
-
-// ── REMOVE MARKER ──
-window.removeEl = function(el, type) {
-  if (type === 'player') {
-    const chip = document.querySelector(`.player-chip[data-name="${el.dataset.pname}"]`);
-    if (chip) chip.style.opacity = '1';
-  }
-  el.remove();
-};
-
-// ── PLAYER CHIP DRAG ──
-function makeChipDraggable(chip, player) {
-  chip.setAttribute('draggable', true);
-  chip.addEventListener('dragstart', e => {
-    dragSrc = { type: 'player', player };
-    e.dataTransfer.effectAllowed = 'copy';
-  });
-}
-
-// ── EXPORT / IMPORT ──
 window.exportMap = function() {
-  // merge canvas + markers into one image
-  const offscreen = document.createElement('canvas');
-  offscreen.width  = canvas.width;
-  offscreen.height = canvas.height;
-  const octx = offscreen.getContext('2d');
-  octx.drawImage(canvas, 0, 0);
-  // save state as JSON too
-  const state = { drawHistory, placed: placedMarkers };
-  const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `warmap-${getWeekKey()}.json`;
+  const state = { drawHistory };
+  const blob  = new Blob([JSON.stringify(state)], { type:'application/json' });
+  const a     = document.createElement('a');
+  a.href      = URL.createObjectURL(blob);
+  a.download  = `warmap-${getWeekKey()}.json`;
   a.click();
-  toast('Strategy exported!', true);
+  showToast('Strategy exported!', true);
 };
 
 window.importMap = function() {
   const inp = document.createElement('input');
   inp.type = 'file'; inp.accept = '.json';
   inp.onchange = e => {
-    const file = e.target.files[0];
     const reader = new FileReader();
     reader.onload = ev => {
       try {
         const state = JSON.parse(ev.target.result);
         drawHistory = state.drawHistory || [];
         markersLayer.innerHTML = '';
-        placedMarkers = [];
-        (state.placed || []).forEach(m => placeObjective(m.src, m.label, m.x, m.y));
         redrawCanvas();
-        toast('Strategy imported!', true);
-      } catch { toast('Invalid file', false); }
+        showToast('Strategy imported!', true);
+      } catch { showToast('Invalid file', false); }
     };
-    reader.readAsText(file);
+    reader.readAsText(e.target.files[0]);
   };
   inp.click();
 };
 
-// ── TOAST ──
 let toastT;
-window.toast = function(msg, ok) {
+function showToast(msg, ok) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'toast show ' + (ok ? 'ok' : 'err');
   clearTimeout(toastT);
   toastT = setTimeout(() => el.className = 'toast', 3000);
-};
+}
 
-// ── LOAD PLAYERS FROM FIREBASE ──
-const weekKey = getWeekKey();
-const baseRef = ref(db, `guild_wars/${weekKey}/registrations`);
+// ── FIREBASE PLAYERS ──
+const baseRef = ref(db, `guild_wars/${getWeekKey()}/registrations`);
 onValue(baseRef, snap => {
   const list = document.getElementById('player-list');
-  const noP  = document.getElementById('no-players');
   const val  = snap.val();
-  if (!val) { noP.style.display = 'block'; list.innerHTML = '<div class="no-players">No players registered this week</div>'; return; }
-  noP.style.display = 'none';
+  if (!val) { list.innerHTML = '<div class="no-players">No players this week</div>'; return; }
   const players = Object.entries(val).map(([k,v]) => ({_key:k,...v}));
   list.innerHTML = '';
   players.forEach(p => {
     const chip = document.createElement('div');
-    chip.className = 'player-chip';
+    chip.className    = 'player-chip';
     chip.dataset.name = p.name;
+    chip.setAttribute('draggable', true);
     const sideTag = p.jungleSide ? `<span class="side-tag ${p.jungleSide==='Top'?'top':'bot'}">${p.jungleSide}</span>` : '';
     chip.innerHTML = `<span class="role-dot ${p.role}"></span><span class="pname">${p.name}</span>${sideTag}`;
-    makeChipDraggable(chip, p);
+    chip.addEventListener('dragstart', e => {
+      dragSrc = { type:'player', player: p };
+      e.dataTransfer.effectAllowed = 'copy';
+    });
     list.appendChild(chip);
   });
 });
 
-// expose for inline handlers
 window.setMode('select');
 </script>
 </body>
