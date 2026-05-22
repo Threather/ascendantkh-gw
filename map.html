@@ -12,7 +12,7 @@
   --border:rgba(255,255,255,.07);--border-hi:rgba(255,255,255,.13);
   --gold:#c9983a;--gold-dim:rgba(201,152,58,.15);--gold-glow:rgba(201,152,58,.3);
   --text1:#e4e6f0;--text2:#7a7e9a;--text3:#3e4260;
-  --heal:#27a06a;--tank:#3a7fd4;--dps:#c94f4f;
+  --heal:#27a06a;--tank:#c9783a;--dps:#3a7fd4;
   --r:10px;--r-sm:7px;
 }
 html,body{height:100%;overflow:hidden}
@@ -62,6 +62,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .player-chip.placed{opacity:.4;cursor:default}
 .role-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .role-dot.heal{background:var(--heal)}.role-dot.tank{background:var(--tank)}.role-dot.dps{background:var(--dps)}
+.day-tabs{display:flex;gap:6px;margin-bottom:.75rem}
+.day-tab{flex:1;padding:5px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-family:'Outfit',sans-serif;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text3);cursor:pointer;transition:all .18s}
+.day-tab.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.day-panel{display:flex;flex-direction:column;gap:8px}
+.team-group{}
+.team-group-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;padding:4px 0 5px;display:flex;align-items:center;gap:5px}
+.team-group-label.defend{color:var(--def)}
+.team-group-label.attack{color:var(--atk)}
+.team-group-label::after{content:'';flex:1;height:1px;background:currentColor;opacity:.2}
+.player-list{display:flex;flex-direction:column;gap:3px}
 .pname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .side-tag{font-size:9px;padding:1px 5px;border-radius:10px;font-weight:600;white-space:nowrap}
 .side-tag.top{background:rgba(58,127,212,.2);color:#5aaaf5}
@@ -183,11 +193,17 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
 
-    <div class="sidebar-section" style="flex:1;overflow-y:auto">
+    <div class="sidebar-section" style="flex:1;overflow-y:auto;padding:.75rem .875rem">
       <div class="sidebar-label">Players</div>
-      <div class="player-list" id="player-list">
-        <div class="no-players">Loading…</div>
+
+      <!-- DAY TABS -->
+      <div class="day-tabs">
+        <button class="day-tab active" id="tab-sat" onclick="switchDay('sat')">Sat</button>
+        <button class="day-tab" id="tab-sun" onclick="switchDay('sun')">Sun</button>
       </div>
+
+      <div id="players-sat" class="day-panel"></div>
+      <div id="players-sun" class="day-panel" style="display:none"></div>
     </div>
 
   </div>
@@ -488,16 +504,16 @@ function placePly(p, wx, wy) {
   makeDraggable(el);
   markersLayer.appendChild(el);
 
-  const chip = document.querySelector(`.player-chip[data-name="${p.name}"]`);
-  if (chip) chip.classList.add('placed');
+  const chips = document.querySelectorAll(`.player-chip[data-name="${p.name}"]`);
+  chips.forEach(c => c.classList.add('placed'));
 }
 
 window.removePly = function(btn) {
   const el   = btn.parentElement;
   const name = el.dataset.name;
   el.remove();
-  const chip = document.querySelector(`.player-chip[data-name="${name}"]`);
-  if (chip) chip.classList.remove('placed');
+  const chips = document.querySelectorAll(`.player-chip[data-name="${name}"]`);
+  chips.forEach(c => c.classList.remove('placed'));
 };
 
 // ── MAKE MARKER DRAGGABLE (inside world coords) ──
@@ -617,27 +633,66 @@ function showToast(msg, ok) {
 }
 
 // ── FIREBASE PLAYERS ──
+let allPlayers = [];
 const baseRef = ref(db, `guild_wars/${getWeekKey()}/registrations`);
 onValue(baseRef, snap => {
-  const list = document.getElementById('player-list');
-  const val  = snap.val();
-  if (!val) { list.innerHTML = '<div class="no-players">No players this week</div>'; return; }
-  const players = Object.entries(val).map(([k,v]) => ({_key:k,...v}));
-  list.innerHTML = '';
-  players.forEach(p => {
-    const chip = document.createElement('div');
-    chip.className    = 'player-chip';
-    chip.dataset.name = p.name;
-    chip.setAttribute('draggable', true);
-    const sideTag = p.jungleSide ? `<span class="side-tag ${p.jungleSide==='Top'?'top':'bot'}">${p.jungleSide}</span>` : '';
-    chip.innerHTML = `<span class="role-dot ${p.role}"></span><span class="pname">${p.name}</span>${sideTag}`;
-    chip.addEventListener('dragstart', e => {
-      dragSrc = { type:'player', player: p };
-      e.dataTransfer.effectAllowed = 'copy';
-    });
-    list.appendChild(chip);
-  });
+  const val = snap.val();
+  allPlayers = val ? Object.entries(val).map(([k,v]) => ({_key:k,...v})) : [];
+  renderPlayerSidebar();
 });
+
+function renderPlayerSidebar() {
+  ['sat','sun'].forEach(day => {
+    const dayLabel = day === 'sat' ? 'Saturday' : 'Sunday';
+    const panel    = document.getElementById('players-' + day);
+    const dayP     = allPlayers.filter(p => !p.isReserve && (p.avail === dayLabel || p.avail === 'Sat & Sun'));
+
+    if (dayP.length === 0) {
+      panel.innerHTML = '<div class="no-players">No players for this day</div>';
+      return;
+    }
+
+    const teams = [
+      { key: 'defend', label: '🛡 Defend', cls: 'defend' },
+      { key: 'attack', label: '⚔ Attack',  cls: 'attack'  }
+    ];
+
+    panel.innerHTML = teams.map(t => {
+      const tp = dayP.filter(p => p.team === t.key);
+      if (tp.length === 0) return '';
+      const chips = tp.map(p => {
+        const sideTag = p.jungleSide ? `<span class="side-tag ${p.jungleSide==='Top'?'top':'bot'}">${p.jungleSide}</span>` : '';
+        return `<div class="player-chip" data-name="${p.name}" draggable="true">
+          <span class="role-dot ${p.role}"></span>
+          <span class="pname">${p.name}</span>
+          ${sideTag}
+        </div>`;
+      }).join('');
+      return `<div class="team-group">
+        <div class="team-group-label ${t.cls}">${t.label} (${tp.length})</div>
+        <div class="player-list">${chips}</div>
+      </div>`;
+    }).join('');
+
+    // bind drag events
+    panel.querySelectorAll('.player-chip').forEach(chip => {
+      const name = chip.dataset.name;
+      const p    = allPlayers.find(x => x.name === name);
+      if (!p) return;
+      chip.addEventListener('dragstart', e => {
+        dragSrc = { type: 'player', player: p };
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+    });
+  });
+}
+
+window.switchDay = function(day) {
+  document.getElementById('tab-sat').classList.toggle('active', day === 'sat');
+  document.getElementById('tab-sun').classList.toggle('active', day === 'sun');
+  document.getElementById('players-sat').style.display = day === 'sat' ? 'flex' : 'none';
+  document.getElementById('players-sun').style.display = day === 'sun' ? 'flex' : 'none';
+};
 
 window.setMode('select');
 </script>
