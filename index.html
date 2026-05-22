@@ -30,7 +30,7 @@ h1 span{color:var(--gold)}
 header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;letter-spacing:.03em}
 
 /* STATS */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem;animation:up .5s .08s ease both}
+.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:1.5rem;animation:up .5s .08s ease both}
 .stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:.875rem 1rem;text-align:center;position:relative;overflow:hidden;}
 .stat::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:2px;width:0;background:var(--gold);transition:width .3s}
 .stat:hover::after{width:50%}
@@ -189,7 +189,7 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
 
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:480px){
-  .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stats{grid-template-columns:repeat(3,1fr);gap:8px}
   .stat .val{font-size:2rem}.stat .lbl{font-size:8px}
   .weapon-grid{grid-template-columns:1fr}
 }
@@ -215,9 +215,12 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
   <!-- STAT CARDS -->
   <div class="stats">
     <div class="stat"><div class="val gold" id="cnt-reg">0</div><div class="lbl">Registered</div></div>
-    <div class="stat"><div class="val ok" id="cnt-left">30</div><div class="lbl">Slots Left</div></div>
-    <div class="stat"><div class="val" id="cnt-jungle">0</div><div class="lbl">Jungle / 8</div></div>
+    <div class="stat"><div class="val ok" id="cnt-sat-left">30</div><div class="lbl">Sat Left</div></div>
+    <div class="stat"><div class="val ok" id="cnt-sun-left">30</div><div class="lbl">Sun Left</div></div>
+    <div class="stat"><div class="val" id="cnt-jungle">0</div><div class="lbl">Jungle</div></div>
     <div class="stat"><div class="val purple" id="cnt-reserve">0</div><div class="lbl">Reserve</div></div>
+    <div class="stat"><div class="val" id="cnt-sat" style="color:#7a5fd4">0</div><div class="lbl">Saturday</div></div>
+    <div class="stat"><div class="val" id="cnt-sun" style="color:#c9783a">0</div><div class="lbl">Sunday</div></div>
   </div>
 
   <div class="grid">
@@ -364,7 +367,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-const MAIN_MAX = 30, RESERVE_MAX = 60, JUNGLE_MAX = 8;
+const MAIN_MAX = 60, RESERVE_MAX = 60, JUNGLE_MAX = 8, DAY_MAX = 30;
+
+function jungleSatCount() { return players.filter(p => !p.isReserve && p.jungle && (p.avail==='Saturday' || p.avail==='Sat & Sun')).length; }
+function jungleSunCount() { return players.filter(p => !p.isReserve && p.jungle && (p.avail==='Sunday'   || p.avail==='Sat & Sun')).length; }
 let players  = [];
 let jungleOn = false;
 
@@ -447,15 +453,24 @@ window.submitForm = async function() {
 
   const mainPlayers    = players.filter(p => !p.isReserve);
   const reservePlayers = players.filter(p => p.isReserve);
+  const satCount = mainPlayers.filter(p => p.avail === 'Saturday' || p.avail === 'Sat & Sun').length;
+  const sunCount = mainPlayers.filter(p => p.avail === 'Sunday'   || p.avail === 'Sat & Sun').length;
 
-  if (reservePlayers.length >= RESERVE_MAX) return toast('Both main and reserve are full!', false);
+  const isReserve = (
+    (avail === 'Saturday' && satCount >= DAY_MAX) ||
+    (avail === 'Sunday'   && sunCount >= DAY_MAX) ||
+    (avail === 'Sat & Sun' && satCount >= DAY_MAX && sunCount >= DAY_MAX)
+  );
 
-  const isReserve = mainPlayers.length >= MAIN_MAX;
+  if (reservePlayers.length >= RESERVE_MAX && isReserve) return toast('All slots including reserve are full!', false);
 
   // Jungle only for main players
-  if (!isReserve) {
-    if (jungleOn && jungleCount() >= JUNGLE_MAX) return toast('Jungle is full (8/8)!', false);
-    if (jungleOn && role === 'heal') {
+  if (!isReserve && jungleOn) {
+    const satFull = (avail === 'Saturday' || avail === 'Sat & Sun') && jungleSatCount() >= JUNGLE_MAX;
+    const sunFull = (avail === 'Sunday'   || avail === 'Sat & Sun') && jungleSunCount() >= JUNGLE_MAX;
+    if (satFull) return toast('Saturday jungle is full (8/8)!', false);
+    if (sunFull) return toast('Sunday jungle is full (8/8)!', false);
+    if (role === 'heal') {
       const topHeal = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Top' && p.role === 'heal').length;
       const botHeal = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Bottom' && p.role === 'heal').length;
       if (topHeal >= 1 && botHeal >= 1) return toast('Both jungle sides already have a healer.', false);
@@ -507,25 +522,41 @@ function resetForm() {
   document.getElementById('jungle-wrap').classList.remove('checked');
 }
 
-function jungleCount() { return players.filter(p => p.jungle && !p.isReserve).length; }
+function jungleCount() { return players.filter(p => p.jungle && !p.isReserve).length; } // kept for reference
 
 function render() {
   const mainPlayers    = players.filter(p => !p.isReserve);
   const reservePlayers = players.filter(p => p.isReserve);
   const taken  = mainPlayers.length;
   const left   = MAIN_MAX - taken;
-  const jc     = jungleCount();
   const pct    = Math.round((taken / MAIN_MAX) * 100);
 
   // Stat cards
+  const satCount = mainPlayers.filter(p => p.avail === 'Saturday' || p.avail === 'Sat & Sun').length;
+  const sunCount = mainPlayers.filter(p => p.avail === 'Sunday'   || p.avail === 'Sat & Sun').length;
+  const satLeft  = DAY_MAX - satCount;
+  const sunLeft  = DAY_MAX - sunCount;
+  const jSat = jungleSatCount();
+  const jSun = jungleSunCount();
+  const jc   = Math.max(jSat, jSun);
+
   document.getElementById('cnt-reg').textContent     = taken;
   document.getElementById('cnt-reserve').textContent = reservePlayers.length;
-  const leftEl = document.getElementById('cnt-left');
-  leftEl.textContent = Math.max(0, left);
-  leftEl.className   = 'val ' + (left <= 0 ? 'bad' : left <= 5 ? 'warn' : 'ok');
+  document.getElementById('cnt-sat').textContent     = satCount;
+  document.getElementById('cnt-sun').textContent     = sunCount;
+
+  const satLeftEl = document.getElementById('cnt-sat-left');
+  satLeftEl.textContent = Math.max(0, satLeft);
+  satLeftEl.className   = 'val ' + (satLeft <= 0 ? 'bad' : satLeft <= 5 ? 'warn' : 'ok');
+
+  const sunLeftEl = document.getElementById('cnt-sun-left');
+  sunLeftEl.textContent = Math.max(0, sunLeft);
+  sunLeftEl.className   = 'val ' + (sunLeft <= 0 ? 'bad' : sunLeft <= 5 ? 'warn' : 'ok');
+
   const jEl = document.getElementById('cnt-jungle');
-  jEl.textContent = jc;
-  jEl.className   = 'val ' + (jc >= JUNGLE_MAX ? 'bad' : jc >= 6 ? 'warn' : 'ok');
+  jEl.textContent    = `${jSat}/${jSun}`;
+  jEl.className      = 'val ' + ((jSat >= JUNGLE_MAX && jSun >= JUNGLE_MAX) ? 'bad' : (jSat >= 6 || jSun >= 6) ? 'warn' : 'ok');
+  jEl.style.fontSize = '1.6rem';
 
   // Progress
   document.getElementById('prog-label').textContent = `${taken} / ${MAIN_MAX} registered`;
@@ -541,11 +572,12 @@ function render() {
   const badge = document.getElementById('jungle-badge');
   const topC  = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Top').length;
   const botC  = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Bottom').length;
-  badge.textContent = `${jc} / ${JUNGLE_MAX}  ·  Top ${topC}  Bot ${botC}`;
-  if (jc >= JUNGLE_MAX || taken >= MAIN_MAX) {
+  badge.textContent = `Sat ${jSat}/8 · Sun ${jSun}/8  ·  Top ${topC} Bot ${botC}`;
+  const bothDaysFull = jSat >= JUNGLE_MAX && jSun >= JUNGLE_MAX;
+  if (bothDaysFull || (satLeft <= 0 && sunLeft <= 0)) {
     wrap.classList.add('disabled');
     note.style.display = 'block';
-    note.textContent = jc >= JUNGLE_MAX ? 'Jungle is full (8/8)' : 'Main roster is full — you will be added to reserve';
+    note.textContent = bothDaysFull ? 'Jungle full on both days (8/8)' : 'Both days are full — you will be added to reserve';
     if (jungleOn) { jungleOn = false; wrap.classList.remove('checked'); }
   } else {
     wrap.classList.remove('disabled');
@@ -554,10 +586,16 @@ function render() {
 
   // Submit button
   const btn = document.getElementById('submit-btn');
-  const totalFull = players.length >= RESERVE_MAX + MAIN_MAX;
+  const selectedAvail = document.querySelector('input[name=avail]:checked')?.value;
+  const isReserveNow = selectedAvail ? (
+    (selectedAvail === 'Saturday'  && satLeft <= 0) ||
+    (selectedAvail === 'Sunday'    && sunLeft <= 0) ||
+    (selectedAvail === 'Sat & Sun' && satLeft <= 0 && sunLeft <= 0)
+  ) : (satLeft <= 0 && sunLeft <= 0);
+  const totalFull = satLeft <= 0 && sunLeft <= 0 && reservePlayers.length >= RESERVE_MAX;
   btn.disabled    = totalFull;
-  btn.textContent = totalFull ? 'All slots full' : taken >= MAIN_MAX ? 'Join Reserve List' : 'Confirm Registration';
-  btn.style.background = taken >= MAIN_MAX && !totalFull ? 'var(--reserve)' : '';
+  btn.textContent = totalFull ? 'All slots full' : isReserveNow ? 'Join Reserve List' : 'Confirm Registration';
+  btn.style.background = !totalFull && isReserveNow ? 'var(--reserve)' : '';
 
   // ── DAY BREAKDOWN TABLE ──
   const dayBody = document.getElementById('day-body');
