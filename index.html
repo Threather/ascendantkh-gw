@@ -12,13 +12,15 @@
   --border:rgba(255,255,255,.07);--border-hi:rgba(255,255,255,.13);
   --gold:#c9983a;--gold-dim:rgba(201,152,58,.15);--gold-glow:rgba(201,152,58,.3);
   --text1:#e4e6f0;--text2:#7a7e9a;--text3:#3e4260;
-  --heal:#27a06a;--tank:#3a7fd4;--dps:#c94f4f;--atk:#c9783a;--def:#5a7ab5;
-  --success:#27a06a;--error:#c94f4f;--warn:#c9963a;--r:10px;--r-sm:7px;
+  --heal:#27a06a;--tank:#c9783a;--dps:#3a7fd4;--atk:#c9963a;--def:#5a7ab5;
+  --success:#27a06a;--error:#c94f4f;--warn:#c9963a;
+  --reserve:#7a5fd4;--reserve-dim:rgba(122,95,212,.12);
+  --r:10px;--r-sm:7px;
 }
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text1);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,152,58,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(201,152,58,.02) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0;}
-.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:2rem 1rem 5rem}
+.page{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:2rem 1rem 5rem}
 header{text-align:center;margin-bottom:2.5rem;animation:up .5s ease both}
 .eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:.6rem;}
 .eyebrow::before,.eyebrow::after{content:'';height:1px;width:36px;background:linear-gradient(90deg,transparent,var(--gold-glow))}
@@ -27,28 +29,30 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,4.2rem);letter
 h1 span{color:var(--gold)}
 header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;letter-spacing:.03em}
 
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;animation:up .5s .08s ease both}
-.stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem;text-align:center;position:relative;overflow:hidden;}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem;animation:up .5s .08s ease both}
+.stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:.875rem 1rem;text-align:center;position:relative;overflow:hidden;}
 .stat::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:2px;width:0;background:var(--gold);transition:width .3s}
 .stat:hover::after{width:50%}
-.stat .val{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;line-height:1;letter-spacing:.03em;transition:color .3s}
-.stat .val.ok{color:var(--success)}.stat .val.warn{color:var(--warn)}.stat .val.bad{color:var(--error)}.stat .val.gold{color:var(--gold)}
+.stat .val{font-family:'Bebas Neue',sans-serif;font-size:2.3rem;line-height:1;letter-spacing:.03em;transition:color .3s}
+.stat .val.ok{color:var(--success)}.stat .val.warn{color:var(--warn)}.stat .val.bad{color:var(--error)}.stat .val.gold{color:var(--gold)}.stat .val.purple{color:var(--reserve)}
 .stat .lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-top:2px}
 
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start}
-@media(max-width:660px){.grid{grid-template-columns:1fr}}
+/* GRID */
+.grid{display:grid;grid-template-columns:1fr 1.4fr;gap:1.25rem;align-items:start}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
 
+/* CARD */
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;animation:up .5s .15s ease both}
 .card-title{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;gap:6px}
 .card-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border-hi),transparent)}
 
+/* FORM */
 .field{margin-bottom:1.1rem}
 .field label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:6px;font-weight:500}
 .field input[type=text]{width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s,box-shadow .2s;}
 .field input[type=text]:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
 .field input[type=text]::placeholder{color:var(--text3)}
-
-/* weapon boxes */
 .weapon-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .weapon-box{background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);padding:10px 12px;transition:border-color .2s,box-shadow .2s;}
 .weapon-box:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
@@ -56,9 +60,8 @@ header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;let
 .weapon-box select{width:100%;background:transparent;border:none;color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;}
 .weapon-box select option{background:#1a1e2e;color:var(--text1)}
 .weapon-box select option:disabled{color:var(--text3)}
-.weapon-box .wicon{font-size:16px;margin-bottom:4px}
 
-/* pills */
+/* PILLS */
 .pill-row{display:flex;gap:7px;flex-wrap:wrap}
 .pill{position:relative;flex:1;min-width:70px}
 .pill input{position:absolute;opacity:0;width:0;height:0}
@@ -72,15 +75,16 @@ header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;let
 .pill.sun  input:checked+span{border-color:#c9783a;background:rgba(201,120,58,.12);color:#c9783a}
 .pill.both input:checked+span{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
 .pill.def  input:checked+span{border-color:var(--def);background:rgba(90,122,181,.12);color:var(--def)}
+.pill.atk  input:checked+span{border-color:var(--atk);background:rgba(201,120,58,.12);color:var(--atk)}
 
-/* jungle */
+/* JUNGLE */
 .jungle-wrap{display:flex;align-items:center;justify-content:space-between;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);padding:10px 14px;cursor:pointer;transition:all .18s;}
 .jungle-wrap:hover{background:var(--bg-hover)}
 .jungle-wrap.checked{border-color:var(--heal);background:rgba(39,160,106,.1)}
 .jungle-wrap.disabled{opacity:.4;pointer-events:none}
 .jungle-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text2);transition:color .18s}
 .jungle-wrap.checked .jungle-label{color:var(--heal)}
-.jungle-badge{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.jungle-badge{font-size:10px;color:var(--text3)}
 .jungle-wrap.checked .jungle-badge{color:rgba(39,160,106,.7)}
 .jungle-full-note{font-size:11px;color:var(--error);margin-top:6px;display:none}
 .toggle{width:34px;height:19px;border-radius:20px;background:var(--bg-hover);border:1px solid var(--border-hi);position:relative;transition:all .2s;flex-shrink:0}
@@ -90,60 +94,104 @@ header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;let
 
 .submit-btn{width:100%;margin-top:1.1rem;padding:13px 20px;background:var(--gold);border:none;border-radius:var(--r-sm);color:#0c0e13;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
 .submit-btn:hover{background:#e0ad47;transform:translateY(-1px)}
-.submit-btn:active{transform:translateY(0);opacity:.9}
+.submit-btn:active{transform:translateY(0)}
 .submit-btn:disabled{background:var(--text3);color:var(--bg);cursor:not-allowed;transform:none}
 
+/* TOAST */
 .toast{position:fixed;top:1.2rem;left:50%;transform:translateX(-50%) translateY(-120%);background:var(--bg-card);border:1px solid var(--border-hi);border-radius:var(--r);padding:.75rem 1.25rem;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-width:90vw;text-align:center;}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(39,160,106,.4);color:var(--success)}
 .toast.err{border-color:rgba(201,79,79,.4);color:var(--error)}
 .toast .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
 
+/* STATUS */
 .status-bar{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 14px;margin-bottom:1rem;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;animation:up .5s .05s ease both;}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
-.status-dot.connecting{background:var(--warn)}
-.status-dot.live{background:var(--success)}
-.status-dot.error{background:var(--error)}
+.status-dot.connecting{background:var(--warn)}.status-dot.live{background:var(--success)}.status-dot.error{background:var(--error)}
 
-.roster-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:up .5s .22s ease both}
-.roster-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border)}
+/* RIGHT COLUMN STACK */
+.right-col{display:flex;flex-direction:column;gap:1.25rem}
+
+/* DAY BREAKDOWN TABLE */
+.day-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:up .5s .12s ease both}
+.day-card .card-title{padding:1rem 1.25rem;margin-bottom:0;border-bottom:1px solid var(--border)}
+.day-table{width:100%;border-collapse:collapse}
+.day-table th{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-weight:500;padding:.6rem 1rem;text-align:center;border-bottom:1px solid var(--border);}
+.day-table th:first-child{text-align:left}
+.day-table td{padding:.6rem 1rem;font-size:13px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);}
+.day-table td:first-child{text-align:left;font-weight:500;font-size:12px;color:var(--text1)}
+.day-table tr:last-child td{border-bottom:none}
+.day-table .total-col{font-weight:600;color:var(--text1)}
+.day-row{cursor:pointer;transition:background .15s;user-select:none}
+.day-row:hover{background:rgba(255,255,255,.03)}
+.day-row.open{background:rgba(255,255,255,.03)}
+.day-chevron{display:inline-block;font-size:10px;margin-left:6px;color:var(--text3);transition:transform .2s}
+.day-row.open .day-chevron{transform:rotate(90deg)}
+.day-expand-row td{padding:0!important;border-bottom:1px solid var(--border)}
+.day-expand-inner{padding:.875rem 1.25rem;display:none;gap:12px;background:rgba(255,255,255,.02)}
+.day-expand-row.open .day-expand-inner{display:grid;grid-template-columns:1fr 1fr}
+.team-col{background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);padding:.75rem 1rem}
+.team-col-header{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:.625rem;display:flex;align-items:center;gap:6px}
+.team-col-header .tcnt{font-size:11px;color:var(--text2);font-weight:400;letter-spacing:0;text-transform:none}
+.team-role-row{margin-bottom:.5rem}
+.team-role-row:last-child{margin-bottom:0}
+.team-role-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+.team-role-label .role-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.team-names{display:flex;flex-wrap:wrap;gap:4px}
+.player-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:500;border:1px solid var(--border-hi);background:var(--bg-card);color:var(--text1);white-space:nowrap}
+.player-pill .role-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.role-dot.heal{background:var(--heal)}.role-dot.tank{background:var(--tank)}.role-dot.dps{background:var(--dps)}
+.no-names{font-size:11px;color:var(--text3);font-style:italic}
+.day-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* ROSTER */
+.roster-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:up .5s .18s ease both}
+.roster-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border)}
 .roster-header .card-title{margin-bottom:0}
-
-.progress-wrap{padding:1rem 1.5rem;border-bottom:1px solid var(--border)}
-.progress-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:6px;letter-spacing:.04em}
+.progress-wrap{padding:.875rem 1.25rem;border-bottom:1px solid var(--border)}
+.progress-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:6px}
 .progress-bar{height:4px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
 .progress-fill{height:100%;border-radius:20px;background:var(--gold);transition:width .5s cubic-bezier(.4,0,.2,1)}
 .progress-fill.warn{background:var(--warn)}.progress-fill.bad{background:var(--error)}
-
 .table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:500px}
-thead th{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);font-weight:500;padding:.65rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;min-width:480px}
+thead th{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-weight:500;padding:.6rem .875rem;text-align:left;border-bottom:1px solid var(--border);}
 tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:rgba(255,255,255,.02)}
-tbody td{padding:.75rem 1rem;font-size:12px;color:var(--text1);vertical-align:middle}
-td.num{color:var(--text3);font-size:11px;width:30px}
+tbody td{padding:.65rem .875rem;font-size:12px;color:var(--text1);vertical-align:middle}
+td.num{color:var(--text3);font-size:11px;width:28px}
 td.ign{font-weight:500;font-size:13px}
 td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
 
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+/* RESERVE SECTION */
+.reserve-divider{display:flex;align-items:center;gap:10px;padding:.875rem 1.25rem;border-top:1px solid var(--border);background:rgba(122,95,212,.05)}
+.reserve-divider span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--reserve);white-space:nowrap;font-weight:600}
+.reserve-divider::before,.reserve-divider::after{content:'';flex:1;height:1px;background:rgba(122,95,212,.2)}
+tbody tr.reserve-row{background:rgba(122,95,212,.04)}
+tbody tr.reserve-row:hover{background:rgba(122,95,212,.08)}
+tbody tr.reserve-row td.num{color:var(--reserve);opacity:.7}
+tbody tr.reserve-row td.ign{color:var(--text2)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .badge.heal{background:rgba(39,160,106,.15);color:var(--heal)}
-.badge.tank{background:rgba(58,127,212,.15);color:var(--tank)}
-.badge.dps{background:rgba(201,79,79,.15);color:var(--dps)}
+.badge.tank{background:rgba(201,120,58,.15);color:var(--tank)}
+.badge.dps{background:rgba(58,127,212,.15);color:var(--dps)}
 .badge.atk{background:rgba(201,120,58,.15);color:var(--atk)}
 .badge.def{background:rgba(90,122,181,.15);color:var(--def)}
-.badge.jungle{background:rgba(39,160,106,.12);color:var(--heal)}
 .badge.jungle-top{background:rgba(58,127,212,.15);color:#5aaaf5}
 .badge.jungle-bot{background:rgba(201,120,58,.15);color:#e8943a}
+.badge.rsv{background:var(--reserve-dim);color:var(--reserve)}
 
-.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:13px;letter-spacing:.05em}
+.empty-state{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px}
 .empty-state p{margin-top:.4rem;font-size:11px;opacity:.6}
 
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:480px){
-  .stats{gap:8px}.stat .val{font-size:2rem}.stat .lbl{font-size:8px}
+  .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat .val{font-size:2rem}.stat .lbl{font-size:8px}
   .weapon-grid{grid-template-columns:1fr}
-  thead th:nth-child(3){display:none}tbody td:nth-child(3){display:none}
 }
 </style>
 </head>
@@ -161,12 +209,15 @@ td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
   <div class="status-bar">
     <div class="status-dot connecting" id="status-dot"></div>
     <span id="status-text">Connecting to database…</span>
+    <span style="margin-left:auto"><a href="map.html" style="color:var(--gold);font-size:11px;text-decoration:none;letter-spacing:.06em">⚔ War Map →</a></span>
   </div>
 
+  <!-- STAT CARDS -->
   <div class="stats">
     <div class="stat"><div class="val gold" id="cnt-reg">0</div><div class="lbl">Registered</div></div>
     <div class="stat"><div class="val ok" id="cnt-left">30</div><div class="lbl">Slots Left</div></div>
     <div class="stat"><div class="val" id="cnt-jungle">0</div><div class="lbl">Jungle / 8</div></div>
+    <div class="stat"><div class="val purple" id="cnt-reserve">0</div><div class="lbl">Reserve</div></div>
   </div>
 
   <div class="grid">
@@ -179,21 +230,16 @@ td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
         <input type="text" id="f-name" placeholder="Your IGN" maxlength="30" autocomplete="off">
       </div>
 
-      <!-- WEAPON BOXES -->
       <div class="field">
         <label>Weapons</label>
         <div class="weapon-grid">
           <div class="weapon-box">
             <div class="wlabel">⚔ Weapon 1</div>
-            <select id="w1" onchange="syncWeapons()">
-              <option value="">— Select —</option>
-            </select>
+            <select id="w1" onchange="syncWeapons()"><option value="">— Select —</option></select>
           </div>
           <div class="weapon-box">
             <div class="wlabel">🗡 Weapon 2</div>
-            <select id="w2" onchange="syncWeapons()">
-              <option value="">— Select —</option>
-            </select>
+            <select id="w2" onchange="syncWeapons()"><option value="">— Select —</option></select>
           </div>
         </div>
       </div>
@@ -237,11 +283,33 @@ td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
       <button class="submit-btn" id="submit-btn" onclick="submitForm()">Confirm Registration</button>
     </div>
 
-    <!-- ROSTER -->
-    <div>
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+      <!-- DAY BREAKDOWN -->
+      <div class="day-card">
+        <div class="card-title" style="padding:1rem 1.25rem;margin-bottom:0;border-bottom:1px solid var(--border)">Availability Breakdown</div>
+        <table class="day-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th style="color:var(--heal)">Heal</th>
+              <th style="color:var(--tank)">Tank</th>
+              <th style="color:var(--dps)">DPS</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="day-body">
+            <tr><td colspan="5" style="text-align:center;color:var(--text3);font-size:12px;padding:1rem">No data yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MAIN ROSTER -->
       <div class="roster-card">
         <div class="roster-header">
-          <div class="card-title" style="margin-bottom:0">Roster</div>
+          <div class="card-title" style="margin-bottom:0">Main Roster</div>
+          <span style="font-size:11px;color:var(--text3)" id="main-count">0 / 30</span>
         </div>
         <div class="progress-wrap">
           <div class="progress-labels">
@@ -253,21 +321,27 @@ td.wpn{color:var(--text2);font-size:11px;line-height:1.5}
         <div class="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>#</th>
-                <th>IGN</th>
-                <th>Weapons</th>
-                <th>Role</th>
-                <th>Team</th>
-                <th>Day</th>
-                <th>Jgl</th>
-              </tr>
+              <tr><th>#</th><th>IGN</th><th>Weapons</th><th>Role</th><th>Team</th><th>Day</th><th>Jgl</th></tr>
             </thead>
             <tbody id="roster-body">
-              <tr><td colspan="6"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>
+              <tr><td colspan="7"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>
             </tbody>
           </table>
         </div>
+
+        <!-- RESERVE SECTION (inside same card) -->
+        <div id="reserve-section" style="display:none">
+          <div class="reserve-divider"><span>Reserve Players</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>#</th><th>IGN</th><th>Weapons</th><th>Role</th><th>Team</th><th>Day</th><th>Status</th></tr>
+              </thead>
+              <tbody id="reserve-body"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -290,90 +364,55 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-const MAX = 30, JUNGLE_MAX = 8;
+const MAIN_MAX = 30, RESERVE_MAX = 60, JUNGLE_MAX = 8;
 let players  = [];
 let jungleOn = false;
 
 const WEAPONS = [
-  "Nameless Sword",
-  "Nameless Spear",
-  "Stormbreaker Spear",
-  "Thundercry Blade",
-  "Infernal Twinblades",
-  "Mortal Rope Dart",
-  "Vernal Umbrella",
-  "Inkwell Fan",
-  "Panacea Fan",
-  "Soulshade Umbrella",
-  "Heavenquaker Spear",
-  "Strategic Sword",
-  "Snowparting Blade",
-  "Phalanxbane Blade",
-  "Everspring Umbrella",
-  "Unfettered Rope Dart"
+  "Nameless Sword","Nameless Spear","Stormbreaker Spear","Thundercry Blade",
+  "Infernal Twinblades","Mortal Rope Dart","Vernal Umbrella","Inkwell Fan",
+  "Panacea Fan","Soulshade Umbrella","Heavenquaker Spear","Strategic Sword",
+  "Snowparting Blade","Phalanxbane Blade","Everspring Umbrella","Unfettered Rope Dart"
 ];
 
-// ── WEEK KEY ──
 function getWeekKey() {
-  const now   = new Date();
+  const now = new Date();
   const start = new Date(now.getFullYear(), 0, 1);
-  const week  = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+  const week = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
   return `${now.getFullYear()}-W${String(week).padStart(2,'0')}`;
 }
 
 const weekKey = getWeekKey();
 const baseRef = ref(db, `guild_wars/${weekKey}/registrations`);
 
-// ── POPULATE WEAPON DROPDOWNS ──
 function populateWeapons() {
-  const w1 = document.getElementById('w1');
-  const w2 = document.getElementById('w2');
-  [w1, w2].forEach(sel => {
+  ['w1','w2'].forEach(id => {
+    const sel = document.getElementById(id);
     sel.innerHTML = '<option value="">— Select —</option>';
-    WEAPONS.forEach(w => {
-      const opt = document.createElement('option');
-      opt.value = w; opt.textContent = w;
-      sel.appendChild(opt);
-    });
+    WEAPONS.forEach(w => { const o = document.createElement('option'); o.value = o.textContent = w; sel.appendChild(o); });
   });
 }
 
-// ── SYNC WEAPONS (disable duplicate) ──
 window.syncWeapons = function() {
   const v1 = document.getElementById('w1').value;
   const v2 = document.getElementById('w2').value;
-  const w1opts = document.getElementById('w1').options;
-  const w2opts = document.getElementById('w2').options;
-  for (let i = 1; i < w1opts.length; i++) {
-    w1opts[i].disabled = (w1opts[i].value === v2 && v2 !== '');
-  }
-  for (let i = 1; i < w2opts.length; i++) {
-    w2opts[i].disabled = (w2opts[i].value === v1 && v1 !== '');
-  }
+  [...document.getElementById('w1').options].forEach((o,i) => { if(i) o.disabled = o.value === v2 && v2 !== ''; });
+  [...document.getElementById('w2').options].forEach((o,i) => { if(i) o.disabled = o.value === v1 && v1 !== ''; });
 };
 
-// ── STATUS ──
 function setStatus(state, text) {
   document.getElementById('status-dot').className = 'status-dot ' + state;
   document.getElementById('status-text').textContent = text;
 }
 
-// ── REALTIME LISTENER ──
 onValue(baseRef, (snap) => {
   players = [];
   const val = snap.val();
-  if (val) {
-    Object.entries(val).forEach(([key, data]) => {
-      players.push({ _key: key, ...data });
-    });
-  }
+  if (val) Object.entries(val).forEach(([key, data]) => players.push({ _key: key, ...data }));
   setStatus('live', `Live · Week ${weekKey}`);
   render();
-}, () => {
-  setStatus('error', 'Connection error — check database rules');
-});
+}, () => setStatus('error', 'Connection error'));
 
-// ── JUNGLE TOGGLE ──
 window.toggleJungle = function() {
   const wrap = document.getElementById('jungle-wrap');
   if (wrap.classList.contains('disabled')) return;
@@ -381,7 +420,6 @@ window.toggleJungle = function() {
   wrap.classList.toggle('checked', jungleOn);
 };
 
-// ── TOAST ──
 let toastTimer;
 function toast(msg, ok) {
   const el = document.getElementById('toast');
@@ -391,71 +429,71 @@ function toast(msg, ok) {
   toastTimer = setTimeout(() => el.className = 'toast', 3200);
 }
 
-// ── SUBMIT ──
 window.submitForm = async function() {
   const name  = document.getElementById('f-name').value.trim();
   const w1    = document.getElementById('w1').value;
   const w2    = document.getElementById('w2').value;
   const role  = document.querySelector('input[name=role]:checked')?.value;
   const team  = document.querySelector('input[name=team]:checked')?.value;
-
   const avail = document.querySelector('input[name=avail]:checked')?.value;
 
-  if (!name)  return toast('Please enter your in-game name.', false);
-  if (!w1)    return toast('Please select Weapon 1.', false);
-  if (!w2)    return toast('Please select Weapon 2.', false);
-  if (w1 === w2) return toast('Weapon 1 and Weapon 2 must be different.', false);
-  if (!role)  return toast('Please select a role.', false);
-  if (!team)  return toast('Please select a team.', false);
-  if (!avail) return toast('Please select your availability.', false);
-  if (players.length >= MAX) return toast('Registration is full!', false);
-  if (jungleOn && jungleCount() >= JUNGLE_MAX) return toast('Jungle is full (8/8)!', false);
+  if (!name)     return toast('Please enter your in-game name.', false);
+  if (!w1)       return toast('Please select Weapon 1.', false);
+  if (!w2)       return toast('Please select Weapon 2.', false);
+  if (w1 === w2) return toast('Weapon 1 and 2 must be different.', false);
+  if (!role)     return toast('Please select a role.', false);
+  if (!team)     return toast('Please select a team.', false);
+  if (!avail)    return toast('Please select your availability.', false);
 
-  // Block healer from jungle if both sides already have a healer
-  if (jungleOn && role === 'heal') {
-    const topHeal  = players.filter(p => p.jungle && p.jungleSide === 'Top'    && p.role === 'heal').length;
-    const botHeal  = players.filter(p => p.jungle && p.jungleSide === 'Bottom' && p.role === 'heal').length;
-    if (topHeal >= 1 && botHeal >= 1) return toast('Both jungle sides already have a healer. Uncheck jungle or change role.', false);
+  const mainPlayers    = players.filter(p => !p.isReserve);
+  const reservePlayers = players.filter(p => p.isReserve);
+
+  if (reservePlayers.length >= RESERVE_MAX) return toast('Both main and reserve are full!', false);
+
+  const isReserve = mainPlayers.length >= MAIN_MAX;
+
+  // Jungle only for main players
+  if (!isReserve) {
+    if (jungleOn && jungleCount() >= JUNGLE_MAX) return toast('Jungle is full (8/8)!', false);
+    if (jungleOn && role === 'heal') {
+      const topHeal = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Top' && p.role === 'heal').length;
+      const botHeal = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Bottom' && p.role === 'heal').length;
+      if (topHeal >= 1 && botHeal >= 1) return toast('Both jungle sides already have a healer.', false);
+    }
   }
 
   const dup = players.find(p => p.name.toLowerCase() === name.toLowerCase());
   if (dup) return toast(`"${name}" is already registered.`, false);
 
-  // ── AUTO ASSIGN JUNGLE SIDE ──
+  // Auto assign jungle side
   let jungleSide = null;
-  if (jungleOn) {
-    const topPlayers = players.filter(p => p.jungle && p.jungleSide === 'Top');
-    const botPlayers = players.filter(p => p.jungle && p.jungleSide === 'Bottom');
-    const topHeal    = topPlayers.filter(p => p.role === 'heal').length;
-    const botHeal    = botPlayers.filter(p => p.role === 'heal').length;
-
+  if (!isReserve && jungleOn) {
+    const topP = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Top');
+    const botP = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Bottom');
     if (role === 'heal') {
-      // Assign to side missing a healer
-      jungleSide = topHeal === 0 ? 'Top' : 'Bottom';
+      jungleSide = topP.filter(p => p.role === 'heal').length === 0 ? 'Top' : 'Bottom';
     } else {
-      // Assign to side with fewer people, but prefer side that still needs a healer to keep space
-      // Priority: balance numbers, but don't fill a side to 4 if it has no healer yet
-      const topFull = topPlayers.length >= 4;
-      const botFull = botPlayers.length >= 4;
-      if (topFull) jungleSide = 'Bottom';
-      else if (botFull) jungleSide = 'Top';
-      else jungleSide = topPlayers.length <= botPlayers.length ? 'Top' : 'Bottom';
+      jungleSide = topP.length >= 4 ? 'Bottom' : botP.length >= 4 ? 'Top' : topP.length <= botP.length ? 'Top' : 'Bottom';
     }
   }
 
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'Registering…';
+  btn.disabled = true; btn.textContent = 'Registering…';
 
   try {
-    await push(baseRef, { name, weapon1: w1, weapon2: w2, role, team, avail, jungle: jungleOn, jungleSide, registeredAt: Date.now() });
+    await push(baseRef, {
+      name, weapon1: w1, weapon2: w2, role, team, avail,
+      jungle: isReserve ? false : jungleOn,
+      jungleSide, isReserve,
+      registeredAt: Date.now()
+    });
     resetForm();
     const sideMsg = jungleSide ? ` → Jungle ${jungleSide}` : '';
-    toast(`${name} registered!${sideMsg}`, true);
+    const typeMsg = isReserve ? ' (Reserve)' : '';
+    toast(`${name} registered${typeMsg}!${sideMsg}`, true);
   } catch(e) {
     toast('Failed to register. Check your connection.', false);
-    btn.disabled = false;
-    btn.textContent = 'Confirm Registration';
+    btn.disabled = false; btn.textContent = 'Confirm Registration';
   }
 };
 
@@ -464,77 +502,161 @@ function resetForm() {
   document.getElementById('w1').value = '';
   document.getElementById('w2').value = '';
   syncWeapons();
-  document.querySelectorAll('input[name=role], input[name=team], input[name=avail]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[name=role],input[name=team],input[name=avail]').forEach(r => r.checked = false);
   jungleOn = false;
   document.getElementById('jungle-wrap').classList.remove('checked');
 }
 
-function jungleCount() { return players.filter(p => p.jungle).length; }
+function jungleCount() { return players.filter(p => p.jungle && !p.isReserve).length; }
 
-// ── RENDER ──
 function render() {
-  const taken = players.length;
-  const left  = MAX - taken;
-  const jc    = jungleCount();
-  const pct   = Math.round((taken / MAX) * 100);
+  const mainPlayers    = players.filter(p => !p.isReserve);
+  const reservePlayers = players.filter(p => p.isReserve);
+  const taken  = mainPlayers.length;
+  const left   = MAIN_MAX - taken;
+  const jc     = jungleCount();
+  const pct    = Math.round((taken / MAIN_MAX) * 100);
 
-  document.getElementById('cnt-reg').textContent = taken;
+  // Stat cards
+  document.getElementById('cnt-reg').textContent     = taken;
+  document.getElementById('cnt-reserve').textContent = reservePlayers.length;
   const leftEl = document.getElementById('cnt-left');
-  leftEl.textContent = left;
-  leftEl.className = 'val ' + (left === 0 ? 'bad' : left <= 5 ? 'warn' : 'ok');
-
+  leftEl.textContent = Math.max(0, left);
+  leftEl.className   = 'val ' + (left <= 0 ? 'bad' : left <= 5 ? 'warn' : 'ok');
   const jEl = document.getElementById('cnt-jungle');
   jEl.textContent = jc;
-  jEl.className = 'val ' + (jc >= JUNGLE_MAX ? 'bad' : jc >= 6 ? 'warn' : 'ok');
+  jEl.className   = 'val ' + (jc >= JUNGLE_MAX ? 'bad' : jc >= 6 ? 'warn' : 'ok');
 
-  document.getElementById('prog-label').textContent = `${taken} / ${MAX} registered`;
+  // Progress
+  document.getElementById('prog-label').textContent = `${taken} / ${MAIN_MAX} registered`;
   document.getElementById('prog-pct').textContent   = pct + '%';
+  document.getElementById('main-count').textContent = `${taken} / ${MAIN_MAX}`;
   const pf = document.getElementById('prog-fill');
   pf.style.width = pct + '%';
   pf.className   = 'progress-fill' + (pct >= 80 ? ' bad' : pct >= 60 ? ' warn' : '');
 
+  // Jungle toggle
   const wrap  = document.getElementById('jungle-wrap');
   const note  = document.getElementById('jungle-full');
   const badge = document.getElementById('jungle-badge');
-  const topCount = players.filter(p => p.jungle && p.jungleSide === 'Top').length;
-  const botCount = players.filter(p => p.jungle && p.jungleSide === 'Bottom').length;
-  badge.textContent = jc + ' / ' + JUNGLE_MAX + '  ·  Top ' + topCount + '  Bot ' + botCount;
-  if (jc >= JUNGLE_MAX) {
+  const topC  = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Top').length;
+  const botC  = mainPlayers.filter(p => p.jungle && p.jungleSide === 'Bottom').length;
+  badge.textContent = `${jc} / ${JUNGLE_MAX}  ·  Top ${topC}  Bot ${botC}`;
+  if (jc >= JUNGLE_MAX || taken >= MAIN_MAX) {
     wrap.classList.add('disabled');
-    note.textContent = 'Jungle is full (8/8)';
     note.style.display = 'block';
+    note.textContent = jc >= JUNGLE_MAX ? 'Jungle is full (8/8)' : 'Main roster is full — you will be added to reserve';
     if (jungleOn) { jungleOn = false; wrap.classList.remove('checked'); }
   } else {
     wrap.classList.remove('disabled');
     note.style.display = 'none';
   }
 
+  // Submit button
   const btn = document.getElementById('submit-btn');
-  btn.disabled = taken >= MAX;
-  btn.textContent = taken >= MAX ? 'Registration Closed (30/30)' : 'Confirm Registration';
+  const totalFull = players.length >= RESERVE_MAX + MAIN_MAX;
+  btn.disabled    = totalFull;
+  btn.textContent = totalFull ? 'All slots full' : taken >= MAIN_MAX ? 'Join Reserve List' : 'Confirm Registration';
+  btn.style.background = taken >= MAIN_MAX && !totalFull ? 'var(--reserve)' : '';
 
-  const tbody = document.getElementById('roster-body');
-  if (players.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>';
-    return;
+  // ── DAY BREAKDOWN TABLE ──
+  const dayBody = document.getElementById('day-body');
+  const allP    = mainPlayers;
+  const days    = ['Saturday', 'Sunday'];
+  const dayColors = { Saturday: '#7a5fd4', Sunday: '#c9783a' };
+
+  if (allP.length === 0) {
+    dayBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);font-size:12px;padding:1rem">No data yet</td></tr>';
+  } else {
+    // Sat & Sun players count in BOTH days
+    const getDay = (day) => allP.filter(p => p.avail === day || p.avail === 'Sat & Sun');
+    dayBody.innerHTML = days.map(day => {
+      const dp    = getDay(day);
+      const heal  = dp.filter(p => p.role === 'heal').length;
+      const tank  = dp.filter(p => p.role === 'tank').length;
+      const dps   = dp.filter(p => p.role === 'dps').length;
+      const roles   = ['heal','tank','dps'];
+      const roleLabels = { heal:'Heal', tank:'Tank', dps:'DPS' };
+
+      const buildTeamCol = (team, label, icon, borderColor) => {
+        const tp = dp.filter(p => p.team === team);
+        const roleRows = roles.map(r => {
+          const rp = tp.filter(p => p.role === r);
+          if (rp.length === 0) return '';
+          const names = rp.map(p => `<span class="player-pill"><span class="role-dot ${r}"></span>${esc(p.name)}</span>`).join('');
+          return `<div class="team-role-row">
+            <div class="team-role-label"><span class="role-dot ${r}"></span>${roleLabels[r]}</div>
+            <div class="team-names">${names}</div>
+          </div>`;
+        }).join('');
+        return `<div class="team-col" style="border-color:${borderColor}20">
+          <div class="team-col-header" style="color:${borderColor}">${icon} ${label} <span class="tcnt">(${tp.length})</span></div>
+          ${roleRows || '<div class="no-names">No players</div>'}
+        </div>`;
+      };
+
+      const expandContent = buildTeamCol('defend','Defend','🛡','#5a7ab5') + buildTeamCol('attack','Attack','⚔','#c9783a');
+      return `
+        <tr class="day-row" onclick="toggleDay(this)">
+          <td><span class="day-dot" style="background:${dayColors[day]}"></span>${day}<span class="day-chevron">›</span></td>
+          <td>${heal || '<span style="color:var(--text3)">0</span>'}</td>
+          <td>${tank || '<span style="color:var(--text3)">0</span>'}</td>
+          <td>${dps  || '<span style="color:var(--text3)">0</span>'}</td>
+          <td class="total-col">${dp.length}</td>
+        </tr>
+        <tr class="day-expand-row">
+          <td colspan="5"><div class="day-expand-inner">${expandContent}</div></td>
+        </tr>`;
+    }).join('');
   }
-  tbody.innerHTML = players.map((p, i) => `
-    <tr>
-      <td class="num">${i + 1}</td>
-      <td class="ign">${esc(p.name)}</td>
-      <td class="wpn">${esc(p.weapon1)}<br><span style="color:var(--text3)">${esc(p.weapon2)}</span></td>
-      <td><span class="badge ${p.role}">${p.role}</span></td>
-      <td><span class="badge ${p.team === 'defend' ? 'def' : 'atk'}">${p.team}</span></td>
-      <td style="font-size:11px;color:var(--text2);white-space:nowrap">${esc(p.avail || '—')}</td>
-      <td>${p.jungle
-        ? `<span class="badge ${p.jungleSide === 'Top' ? 'jungle-top' : 'jungle-bot'}">${p.jungleSide || 'Jgl'}</span>`
-        : '<span style="color:var(--text3)">—</span>'}</td>
-    </tr>`).join('');
+
+  // ── MAIN ROSTER ──
+  const tbody = document.getElementById('roster-body');
+  if (mainPlayers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>';
+  } else {
+    tbody.innerHTML = mainPlayers.map((p, i) => `
+      <tr>
+        <td class="num">${i+1}</td>
+        <td class="ign">${esc(p.name)}</td>
+        <td class="wpn">${esc(p.weapon1)}<br><span style="color:var(--text3)">${esc(p.weapon2)}</span></td>
+        <td><span class="badge ${p.role}">${p.role}</span></td>
+        <td><span class="badge ${p.team==='defend'?'def':'atk'}">${p.team}</span></td>
+        <td style="font-size:11px;color:var(--text2);white-space:nowrap">${esc(p.avail||'—')}</td>
+        <td>${p.jungle
+          ? `<span class="badge ${p.jungleSide==='Top'?'jungle-top':'jungle-bot'}">${p.jungleSide||'Jgl'}</span>`
+          : '<span style="color:var(--text3)">—</span>'}</td>
+      </tr>`).join('');
+  }
+
+  // ── RESERVE ROSTER ──
+  const reserveSection = document.getElementById('reserve-section');
+  const reserveBody    = document.getElementById('reserve-body');
+  if (reservePlayers.length === 0) {
+    reserveSection.style.display = 'none';
+  } else {
+    reserveSection.style.display = 'block';
+    reserveBody.innerHTML = reservePlayers.map((p, i) => `
+      <tr class="reserve-row">
+        <td class="num">${i+1}</td>
+        <td class="ign">${esc(p.name)}</td>
+        <td class="wpn">${esc(p.weapon1)}<br><span style="color:var(--text3)">${esc(p.weapon2)}</span></td>
+        <td><span class="badge ${p.role}">${p.role}</span></td>
+        <td><span class="badge ${p.team==='defend'?'def':'atk'}">${p.team}</span></td>
+        <td style="font-size:11px;color:var(--text2);white-space:nowrap">${esc(p.avail||'—')}</td>
+        <td><span class="badge rsv">Reserve</span></td>
+      </tr>`).join('');
+  }
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ── INIT ──
+window.toggleDay = function(row) {
+  row.classList.toggle('open');
+  const expandRow = row.nextElementSibling;
+  if (expandRow) expandRow.classList.toggle('open');
+};
+
 populateWeapons();
 setStatus('connecting', 'Connecting to database…');
 </script>
