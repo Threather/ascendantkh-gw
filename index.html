@@ -381,14 +381,19 @@ const WEAPONS = [
   "Snowparting Blade","Phalanxbane Blade","Everspring Umbrella","Unfettered Rope Dart"
 ];
 
-function getWeekKey() {
+function getMonthKey() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const week = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
-  return `${now.getFullYear()}-W${String(week).padStart(2,'0')}`;
+  const day = now.getDay(); // 0=Sun, 1=Mon...
+  const diff = day === 0 ? -6 : 1 - day; // get to most recent Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  const yyyy = monday.getFullYear();
+  const mm   = String(monday.getMonth() + 1).padStart(2, '0');
+  const dd   = String(monday.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
-const weekKey = getWeekKey();
+const weekKey = getMonthKey();
 const baseRef = ref(db, `guild_wars/${weekKey}/registrations`);
 
 function populateWeapons() {
@@ -415,7 +420,7 @@ onValue(baseRef, (snap) => {
   players = [];
   const val = snap.val();
   if (val) Object.entries(val).forEach(([key, data]) => players.push({ _key: key, ...data }));
-  setStatus('live', `Live · Week ${weekKey}`);
+  setStatus('live', `Live · ${weekKey}`);
   render();
 }, () => setStatus('error', 'Connection error'));
 
