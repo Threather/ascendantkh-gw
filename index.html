@@ -536,7 +536,7 @@ window.submitForm = async function() {
       jungleSide, isReserve,
       registeredAt: Date.now()
     });
-    const slotNum  = players.length + 1;
+    const slotNum  = isReserve ? reservePlayers.length + 1 : mainPlayers.length + 1;
     const slotType = isReserve ? 'Reserve' : 'Main Roster';
     resetForm();
     showRegCard({ name, weapon1: w1, weapon2: w2, role, team, avail, jungle: jungleOn, jungleSide, isReserve, slotNum, slotType });
@@ -806,19 +806,21 @@ window.closeRegCard = function() {
 
 window.downloadCard = async function() {
   const card = document.getElementById('reg-card');
-  try {
-    // Use html2canvas loaded from CDN
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    script.onload = async () => {
-      const canvas = await html2canvas(card, { backgroundColor: '#0e1018', scale: 2 });
+  const doCapture = async () => {
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: '#0e1018', scale: 2, useCORS: true });
       const a = document.createElement('a');
-      a.download = `gw-registration-${document.getElementById('rc-name').textContent}.png`;
+      a.download = `gw-${document.getElementById('rc-name').textContent}.png`;
       a.href = canvas.toDataURL('image/png');
       a.click();
-    };
-    document.head.appendChild(script);
-  } catch(e) { toast('Could not save image.', false); }
+    } catch(e) { toast('Could not save image.', false); }
+  };
+  if (typeof html2canvas !== 'undefined') { doCapture(); return; }
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  script.onload = doCapture;
+  script.onerror = () => toast('Could not load image library.', false);
+  document.head.appendChild(script);
 };
 
 window.editPlayer = function(key) {
