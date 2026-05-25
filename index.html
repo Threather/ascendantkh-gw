@@ -377,7 +377,7 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCUJfamdNNdK9MbuYUk_5cZJj6ncrO5_6E",
@@ -795,7 +795,6 @@ window.savePlayer = async function() {
   if (w1 === w2)  return toast('Weapons must be different.', false);
 
   try {
-    const { set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
     await set(ref(db, `guild_wars/${weekKey}/registrations/${editKey}`), {
       ...p, name, weapon1: w1, weapon2: w2, role, team, avail, jungle, jungleSide,
       _key: undefined
@@ -816,6 +815,7 @@ window.verifyAdmin = async function() {
   const input = document.getElementById('admin-input').value.trim();
   try {
     const snap = await get(ref(db, 'admin_config/password'));
+    console.log('Firebase password:', snap.val(), '| Input:', input);
     if (snap.exists() && snap.val() === input) {
       isAdmin = true;
       document.getElementById('admin-panel').style.display    = 'none';
