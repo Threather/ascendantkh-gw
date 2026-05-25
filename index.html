@@ -377,7 +377,7 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCUJfamdNNdK9MbuYUk_5cZJj6ncrO5_6E",
@@ -796,9 +796,8 @@ window.savePlayer = async function() {
   if (w1 === w2)  return toast('Weapons must be different.', false);
 
   try {
-    await set(ref(db, `guild_wars/${weekKey}/registrations/${editKey}`), {
-      ...p, name, weapon1: w1, weapon2: w2, role, team, avail, jungle, jungleSide,
-      _key: undefined
+    await update(ref(db, `guild_wars/${weekKey}/registrations/${editKey}`), {
+      name, weapon1: w1, weapon2: w2, role, team, avail, jungle, jungleSide: jungleSide || null
     });
     closeEdit();
     toast(`${name} updated.`, true);
