@@ -219,7 +219,7 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
   <div id="admin-panel" style="display:none;background:var(--bg-card);border:1px solid rgba(201,152,58,.3);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1rem;animation:up .3s ease both">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">🔐 Admin Access</span>
-      <input type="password" id="admin-input" placeholder="Enter password" style="background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:7px 12px;outline:none;flex:1;min-width:160px" onkeydown="if(event.key==='Enter')verifyAdmin()">
+      <input type="password" id="admin-input" placeholder="Enter admin password" style="background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:7px 12px;outline:none;flex:1;min-width:160px" onkeydown="if(event.key==='Enter')verifyAdmin()">
       <button onclick="verifyAdmin()" style="background:var(--gold);border:none;border-radius:var(--r-sm);color:#0c0e13;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:7px 16px;cursor:pointer">Unlock</button>
       <button onclick="lockAdmin()" style="background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:12px;padding:7px 12px;cursor:pointer">Cancel</button>
     </div>
@@ -378,6 +378,7 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCUJfamdNNdK9MbuYUk_5cZJj6ncrO5_6E",
@@ -390,7 +391,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+const db   = getDatabase(app);
+const auth = getAuth(app);
 
 const MAIN_MAX = 60, RESERVE_MAX = 60, JUNGLE_MAX = 8, DAY_MAX = 30;
 
@@ -812,28 +814,27 @@ window.toggleAdminPanel = function() {
 };
 
 window.verifyAdmin = async function() {
-  const input = document.getElementById('admin-input').value.trim();
+  const password = document.getElementById('admin-input').value.trim();
+  const errEl    = document.getElementById('admin-error');
+  errEl.style.display = 'none';
   try {
-    const snap = await get(ref(db, 'admin_config/password'));
-    console.log('Firebase password:', snap.val(), '| Input:', input);
-    if (snap.exists() && snap.val() === input) {
-      isAdmin = true;
-      document.getElementById('admin-panel').style.display    = 'none';
-      document.getElementById('admin-controls').style.display = 'block';
-      document.getElementById('admin-btn').textContent        = '🔓 Admin';
-      document.getElementById('admin-btn').style.color        = 'var(--gold)';
-      document.getElementById('admin-btn').style.borderColor  = 'var(--gold)';
-      document.querySelectorAll('.admin-col').forEach(c => c.style.display = 'table-cell');
-      toast('Admin mode unlocked.', true);
-    } else {
-      document.getElementById('admin-error').style.display = 'block';
-    }
+    await signInWithEmailAndPassword(auth, 'kevinpom9991@gmail.com', password);
+    isAdmin = true;
+    document.getElementById('admin-panel').style.display    = 'none';
+    document.getElementById('admin-controls').style.display = 'block';
+    document.getElementById('admin-btn').textContent        = '🔓 Admin';
+    document.getElementById('admin-btn').style.color        = 'var(--gold)';
+    document.getElementById('admin-btn').style.borderColor  = 'var(--gold)';
+    document.querySelectorAll('.admin-col').forEach(c => c.style.display = 'table-cell');
+    toast('Admin mode unlocked.', true);
   } catch(e) {
-    toast('Failed to verify password.', false);
+    errEl.style.display = 'block';
+    errEl.textContent   = 'Incorrect password.';
   }
 };
 
 window.lockAdmin = function() {
+  signOut(auth).catch(() => {});
   isAdmin = false;
   document.getElementById('admin-panel').style.display    = 'none';
   document.getElementById('admin-controls').style.display = 'none';
