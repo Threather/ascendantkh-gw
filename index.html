@@ -693,7 +693,10 @@ function render() {
         <td>${p.jungle
           ? `<span class="badge ${p.jungleSide==='Top'?'jungle-top':'jungle-bot'}">${p.jungleSide||'Jgl'}</span>`
           : '<span style="color:var(--text3)">—</span>'}</td>
-        <td class="admin-col" style="display:none"><button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕ Remove</button></td>
+        <td class="admin-col" style="display:none">
+          <button onclick="editPlayer('${p._key}')" style="background:rgba(201,152,58,.15);border:1px solid rgba(201,152,58,.3);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif;margin-right:4px">✏ Edit</button>
+          <button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕</button>
+        </td>
       </tr>`).join('');
   }
 
@@ -714,8 +717,9 @@ function render() {
         <td style="font-size:11px;color:var(--text2);white-space:nowrap">${esc(p.avail||'—')}</td>
         <td><span class="badge rsv">Reserve</span></td>
         <td class="admin-col" style="display:none">
-          <button onclick="promotePlayer('${p._key}')" style="background:rgba(39,160,106,.15);border:1px solid rgba(39,160,106,.3);border-radius:5px;color:#27a06a;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif;margin-right:4px">↑ Promote</button>
-          <button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕ Remove</button>
+          <button onclick="editPlayer('${p._key}')" style="background:rgba(201,152,58,.15);border:1px solid rgba(201,152,58,.3);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif;margin-right:4px">✏ Edit</button>
+          <button onclick="promotePlayer('${p._key}')" style="background:rgba(39,160,106,.15);border:1px solid rgba(39,160,106,.3);border-radius:5px;color:#27a06a;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif;margin-right:4px">↑</button>
+          <button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕</button>
         </td>
       </tr>`).join('');
   }
@@ -733,8 +737,73 @@ window.toggleDay = function(row) {
   if (expandRow) expandRow.classList.toggle('open');
 };
 
-// ── ADMIN ──
-let isAdmin = false;
+// ── EDIT ──
+let editKey = null;
+
+window.editPlayer = function(key) {
+  if (!isAdmin) return;
+  const p = players.find(x => x._key === key);
+  if (!p) return;
+  editKey = key;
+
+  document.getElementById('e-name').value   = p.name || '';
+  document.getElementById('e-avail').value  = p.avail || 'Saturday';
+  document.getElementById('e-role').value   = p.role  || 'dps';
+  document.getElementById('e-team').value   = p.team  || 'defend';
+  document.getElementById('e-jungle').checked    = !!p.jungle;
+  document.getElementById('e-jungleside').value  = p.jungleSide || '';
+
+  // populate weapon dropdowns
+  const w1sel = document.getElementById('e-w1');
+  const w2sel = document.getElementById('e-w2');
+  [w1sel, w2sel].forEach(sel => {
+    sel.innerHTML = '';
+    WEAPONS.forEach(w => {
+      const o = document.createElement('option');
+      o.value = o.textContent = w;
+      sel.appendChild(o);
+    });
+  });
+  w1sel.value = p.weapon1 || '';
+  w2sel.value = p.weapon2 || '';
+
+  const modal = document.getElementById('edit-modal');
+  modal.style.display = 'flex';
+};
+
+window.closeEdit = function() {
+  document.getElementById('edit-modal').style.display = 'none';
+  editKey = null;
+};
+
+window.savePlayer = async function() {
+  if (!isAdmin || !editKey) return;
+  const p = players.find(x => x._key === editKey);
+  if (!p) return;
+
+  const name      = document.getElementById('e-name').value.trim();
+  const w1        = document.getElementById('e-w1').value;
+  const w2        = document.getElementById('e-w2').value;
+  const role      = document.getElementById('e-role').value;
+  const team      = document.getElementById('e-team').value;
+  const avail     = document.getElementById('e-avail').value;
+  const jungle    = document.getElementById('e-jungle').checked;
+  const jungleSide = document.getElementById('e-jungleside').value || null;
+
+  if (!name)     return toast('IGN cannot be empty.', false);
+  if (!w1 || !w2) return toast('Both weapons required.', false);
+  if (w1 === w2)  return toast('Weapons must be different.', false);
+
+  try {
+    const { set } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    await set(ref(db, `guild_wars/${weekKey}/registrations/${editKey}`), {
+      ...p, name, weapon1: w1, weapon2: w2, role, team, avail, jungle, jungleSide,
+      _key: undefined
+    });
+    closeEdit();
+    toast(`${name} updated.`, true);
+  } catch(e) { toast('Failed to save changes.', false); }
+};
 
 window.toggleAdminPanel = function() {
   const panel = document.getElementById('admin-panel');
@@ -809,5 +878,67 @@ window.clearAllAdmin = async function() {
 populateWeapons();
 setStatus('connecting', 'Connecting to database…');
 </script>
-</body>
+<!-- EDIT MODAL -->
+<div id="edit-modal" onclick="if(event.target===this)closeEdit()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--bg-card);border:1px solid var(--border-hi);border-radius:var(--r);padding:1.5rem;width:90%;max-width:480px;animation:up .3s ease both">
+    <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem">✏ Edit Player</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+      <div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px">IGN</div>
+        <input id="e-name" type="text" maxlength="30" style="width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 12px;outline:none">
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px">Availability</div>
+        <select id="e-avail" style="width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 12px;outline:none">
+          <option value="Saturday">Saturday</option>
+          <option value="Sunday">Sunday</option>
+          <option value="Sat & Sun">Sat & Sun</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px">Weapon 1</div>
+        <select id="e-w1" style="width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 12px;outline:none"></select>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px">Weapon 2</div>
+        <select id="e-w2" style="width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 12px;outline:none"></select>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px">Role</div>
+        <select id="e-role" style="width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 12px;outline:none">
+          <option value="heal">Heal</option>
+          <option value="tank">Tank</option>
+          <option value="dps">DPS</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px">Team</div>
+        <select id="e-team" style="width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 12px;outline:none">
+          <option value="defend">Defend</option>
+          <option value="attack">Attack</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:5px">Jungle Side</div>
+        <select id="e-jungleside" style="width:100%;background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 12px;outline:none">
+          <option value="">None</option>
+          <option value="Top">Top</option>
+          <option value="Bottom">Bottom</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text1);cursor:pointer;padding:8px 0">
+          <input type="checkbox" id="e-jungle" style="width:16px;height:16px;accent-color:var(--heal)">
+          Can Jungle?
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeEdit()" style="background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:12px;padding:8px 16px;cursor:pointer">Cancel</button>
+      <button onclick="savePlayer()" style="background:var(--gold);border:none;border-radius:var(--r-sm);color:#0c0e13;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:8px 20px;cursor:pointer">Save Changes</button>
+    </div>
+  </div>
+</div>
 </html>
