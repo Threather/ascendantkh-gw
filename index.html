@@ -536,10 +536,10 @@ window.submitForm = async function() {
       jungleSide, isReserve,
       registeredAt: Date.now()
     });
+    const slotNum  = players.length + 1;
+    const slotType = isReserve ? 'Reserve' : 'Main Roster';
     resetForm();
-    const sideMsg = jungleSide ? ` → Jungle ${jungleSide}` : '';
-    const typeMsg = isReserve ? ' (Reserve)' : '';
-    toast(`${name} registered${typeMsg}!${sideMsg}`, true);
+    showRegCard({ name, weapon1: w1, weapon2: w2, role, team, avail, jungle: jungleOn, jungleSide, isReserve, slotNum, slotType });
   } catch(e) {
     toast('Failed to register. Check your connection.', false);
     btn.disabled = false; btn.textContent = 'Confirm Registration';
@@ -741,7 +741,85 @@ window.toggleDay = function(row) {
   if (expandRow) expandRow.classList.toggle('open');
 };
 
-// ── EDIT ──
+// ── REGISTRATION CARD ──
+function showRegCard(p) {
+  const now    = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const monthStr = `${months[now.getMonth()].toUpperCase()} ${now.getFullYear()}`;
+
+  document.getElementById('rc-name').textContent  = p.name.toUpperCase();
+  document.getElementById('rc-slot').textContent  = `#${String(p.slotNum).padStart(2,'0')}`;
+  document.getElementById('rc-w1').textContent    = p.weapon1;
+  document.getElementById('rc-w2').textContent    = p.weapon2;
+  document.getElementById('rc-month').textContent = monthStr;
+  document.getElementById('rc-date').textContent  = dateStr;
+  document.getElementById('rc-avail').textContent = p.avail;
+  document.getElementById('rc-status').textContent = `Registered · ${p.slotType}`;
+
+  // slot badge
+  const badge = document.getElementById('rc-slot-badge');
+  if (p.isReserve) {
+    badge.textContent = 'Reserve';
+    badge.style.background = 'rgba(122,95,212,.2)';
+    badge.style.color = '#7a5fd4';
+  } else {
+    badge.textContent = 'Main Roster';
+    badge.style.background = 'rgba(39,160,106,.15)';
+    badge.style.color = '#27a06a';
+  }
+
+  // role badge
+  const roleEl = document.getElementById('rc-role');
+  const roleColors = { heal: ['rgba(39,160,106,.15)','#27a06a','❤'], tank: ['rgba(201,120,58,.15)','#c9783a','■'], dps: ['rgba(58,127,212,.15)','#3a7fd4','⚡'] };
+  const rc = roleColors[p.role] || roleColors.dps;
+  roleEl.style.background = rc[0]; roleEl.style.color = rc[1];
+  roleEl.textContent = rc[2] + ' ' + p.role.toUpperCase();
+
+  // team badge
+  const teamEl = document.getElementById('rc-team');
+  if (p.team === 'defend') {
+    teamEl.style.background = 'rgba(90,122,181,.15)'; teamEl.style.color = '#5a7ab5';
+    teamEl.textContent = '🛡 Defend';
+  } else {
+    teamEl.style.background = 'rgba(201,120,58,.15)'; teamEl.style.color = '#c9783a';
+    teamEl.textContent = '⚔ Attack';
+  }
+
+  // jungle
+  const jRow = document.getElementById('rc-jungle-row');
+  if (p.jungle && p.jungleSide) {
+    jRow.style.display = 'block';
+    document.getElementById('rc-jungle-side').textContent = p.jungleSide + ' Lane';
+    document.getElementById('rc-jungle-side').style.color = p.jungleSide === 'Top' ? '#5aaaf5' : '#e8943a';
+  } else {
+    jRow.style.display = 'none';
+  }
+
+  const modal = document.getElementById('reg-card-modal');
+  modal.style.display = 'flex';
+}
+
+window.closeRegCard = function() {
+  document.getElementById('reg-card-modal').style.display = 'none';
+};
+
+window.downloadCard = async function() {
+  const card = document.getElementById('reg-card');
+  try {
+    // Use html2canvas loaded from CDN
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    script.onload = async () => {
+      const canvas = await html2canvas(card, { backgroundColor: '#0e1018', scale: 2 });
+      const a = document.createElement('a');
+      a.download = `gw-registration-${document.getElementById('rc-name').textContent}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    };
+    document.head.appendChild(script);
+  } catch(e) { toast('Could not save image.', false); }
+};
 
 window.editPlayer = function(key) {
   if (!isAdmin) return;
@@ -879,7 +957,97 @@ window.clearAllAdmin = async function() {
 populateWeapons();
 setStatus('connecting', 'Connecting to database…');
 </script>
-<!-- EDIT MODAL -->
+<!-- REGISTRATION CARD MODAL -->
+<div id="reg-card-modal" onclick="if(event.target===this)closeRegCard()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:600;align-items:center;justify-content:center;padding:1rem">
+
+  <div style="width:100%;max-width:400px;animation:up .4s cubic-bezier(.34,1.56,.64,1) both">
+
+    <!-- CARD -->
+    <div id="reg-card" style="background:#0e1018;border-radius:16px;overflow:hidden;font-family:'Outfit',sans-serif;box-shadow:0 24px 60px rgba(0,0,0,.6)">
+
+      <!-- HEADER BAND -->
+      <div style="background:linear-gradient(135deg,#c9983a 0%,#e0b84a 50%,#a07020 100%);padding:1.25rem 1.5rem;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 8px);"></div>
+        <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between">
+          <div>
+            <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,0,0,.6);font-weight:600">AscendantKH Guild</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.06em;color:#0e1018;line-height:1;margin-top:2px">Guild War</div>
+            <div style="font-size:11px;color:rgba(0,0,0,.55);margin-top:3px;letter-spacing:.04em" id="rc-month"></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(0,0,0,.5)">Slot</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#0e1018;line-height:1" id="rc-slot">#1</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEAR LINE -->
+      <div style="display:flex;align-items:center;margin:0 -1px">
+        <div style="width:16px;height:16px;border-radius:50%;background:#0e1018;flex-shrink:0;margin-left:-8px;border:2px solid #1e2232"></div>
+        <div style="flex:1;border-top:2px dashed #1e2232"></div>
+        <div style="width:16px;height:16px;border-radius:50%;background:#0e1018;flex-shrink:0;margin-right:-8px;border:2px solid #1e2232"></div>
+      </div>
+
+      <!-- BODY -->
+      <div style="padding:1.25rem 1.5rem">
+
+        <!-- NAME & SLOT TYPE -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem">
+          <div>
+            <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260;margin-bottom:3px">Player</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:.05em;color:#e4e6f0;line-height:1" id="rc-name">—</div>
+          </div>
+          <div id="rc-slot-badge" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Main</div>
+        </div>
+
+        <!-- ROLE / TEAM / AVAIL -->
+        <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+          <div id="rc-role" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase"></div>
+          <div id="rc-team" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase"></div>
+          <div id="rc-avail" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(201,152,58,.12);color:#c9983a"></div>
+        </div>
+
+        <!-- WEAPONS -->
+        <div style="background:#131620;border-radius:10px;padding:.875rem 1rem;margin-bottom:.875rem">
+          <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#3e4260;margin-bottom:.5rem">Weapons</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:#3e4260;width:60px">Weapon 1</span>
+              <span style="font-size:13px;font-weight:500;color:#e4e6f0" id="rc-w1">—</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:#3e4260;width:60px">Weapon 2</span>
+              <span style="font-size:13px;font-weight:500;color:#e4e6f0" id="rc-w2">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- JUNGLE -->
+        <div id="rc-jungle-row" style="display:none;background:#131620;border-radius:10px;padding:.875rem 1rem;margin-bottom:.875rem">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🌿</span>
+            <div>
+              <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#3e4260">Jungle</div>
+              <div style="font-size:13px;font-weight:600" id="rc-jungle-side">Top Lane</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="border-top:1px solid #1e2232;padding-top:.875rem;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#3e4260" id="rc-status">Registered · Main Roster</div>
+          <div style="font-size:10px;color:#3e4260" id="rc-date"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button onclick="downloadCard()" style="flex:1;padding:11px;background:var(--gold);border:none;border-radius:10px;color:#0c0e13;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer">📥 Save as Image</button>
+      <button onclick="closeRegCard()" style="padding:11px 20px;background:none;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#7a7e9a;font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer">Close</button>
+    </div>
+  </div>
+</div>
 <div id="edit-modal" onclick="if(event.target===this)closeEdit()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
   <div style="background:var(--bg-card);border:1px solid var(--border-hi);border-radius:var(--r);padding:1.5rem;width:90%;max-width:480px;animation:up .3s ease both">
     <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.25rem">✏ Edit Player</div>
