@@ -209,7 +209,32 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
   <div class="status-bar">
     <div class="status-dot connecting" id="status-dot"></div>
     <span id="status-text">Connecting to database…</span>
-    <span style="margin-left:auto"><a href="map.html" style="color:var(--gold);font-size:11px;text-decoration:none;letter-spacing:.06em">⚔ War Map →</a></span>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <button id="admin-btn" onclick="toggleAdminPanel()" style="background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text3);font-size:11px;font-family:'Outfit',sans-serif;padding:4px 10px;cursor:pointer;letter-spacing:.06em;transition:all .18s">🔒 Admin</button>
+      <a href="map.html" style="color:var(--gold);font-size:11px;text-decoration:none;letter-spacing:.06em">⚔ War Map →</a>
+    </span>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="admin-panel" style="display:none;background:var(--bg-card);border:1px solid rgba(201,152,58,.3);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1rem;animation:up .3s ease both">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">🔐 Admin Access</span>
+      <input type="password" id="admin-input" placeholder="Enter password" style="background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text1);font-family:'Outfit',sans-serif;font-size:13px;padding:7px 12px;outline:none;flex:1;min-width:160px" onkeydown="if(event.key==='Enter')verifyAdmin()">
+      <button onclick="verifyAdmin()" style="background:var(--gold);border:none;border-radius:var(--r-sm);color:#0c0e13;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:7px 16px;cursor:pointer">Unlock</button>
+      <button onclick="lockAdmin()" style="background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:12px;padding:7px 12px;cursor:pointer">Cancel</button>
+    </div>
+    <div id="admin-error" style="display:none;font-size:11px;color:var(--error);margin-top:6px">Incorrect password.</div>
+  </div>
+
+  <!-- ADMIN CONTROLS (shown when unlocked) -->
+  <div id="admin-controls" style="display:none;background:rgba(201,152,58,.06);border:1px solid rgba(201,152,58,.25);border-radius:var(--r);padding:.875rem 1.25rem;margin-bottom:1rem;animation:up .3s ease both">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">🔓 Admin Mode Active</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="clearAllAdmin()" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.35);border-radius:var(--r-sm);color:#c94f4f;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;cursor:pointer">🧹 Clear All</button>
+        <button onclick="lockAdmin()" style="background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:11px;padding:6px 12px;cursor:pointer">🔒 Lock</button>
+      </div>
+    </div>
   </div>
 
   <!-- STAT CARDS -->
@@ -352,7 +377,7 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCUJfamdNNdK9MbuYUk_5cZJj6ncrO5_6E",
@@ -381,14 +406,19 @@ const WEAPONS = [
   "Snowparting Blade","Phalanxbane Blade","Everspring Umbrella","Unfettered Rope Dart"
 ];
 
-function getWeekKey() {
+function getMonthKey() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const week = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
-  return `${now.getFullYear()}-W${String(week).padStart(2,'0')}`;
+  const day = now.getDay(); // 0=Sun, 1=Mon...
+  const diff = day === 0 ? -6 : 1 - day; // get to most recent Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  const yyyy = monday.getFullYear();
+  const mm   = String(monday.getMonth() + 1).padStart(2, '0');
+  const dd   = String(monday.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
-const weekKey = getWeekKey();
+const weekKey = getMonthKey();
 const baseRef = ref(db, `guild_wars/${weekKey}/registrations`);
 
 function populateWeapons() {
@@ -415,7 +445,7 @@ onValue(baseRef, (snap) => {
   players = [];
   const val = snap.val();
   if (val) Object.entries(val).forEach(([key, data]) => players.push({ _key: key, ...data }));
-  setStatus('live', `Live · Week ${weekKey}`);
+  setStatus('live', `Live · ${weekKey}`);
   render();
 }, () => setStatus('error', 'Connection error'));
 
@@ -528,7 +558,6 @@ function render() {
   const mainPlayers    = players.filter(p => !p.isReserve);
   const reservePlayers = players.filter(p => p.isReserve);
   const taken  = mainPlayers.length;
-  const left   = MAIN_MAX - taken;
   const pct    = Math.round((taken / MAIN_MAX) * 100);
 
   // Stat cards
@@ -664,6 +693,7 @@ function render() {
         <td>${p.jungle
           ? `<span class="badge ${p.jungleSide==='Top'?'jungle-top':'jungle-bot'}">${p.jungleSide||'Jgl'}</span>`
           : '<span style="color:var(--text3)">—</span>'}</td>
+        <td class="admin-col" style="display:none"><button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕ Remove</button></td>
       </tr>`).join('');
   }
 
@@ -683,7 +713,15 @@ function render() {
         <td><span class="badge ${p.team==='defend'?'def':'atk'}">${p.team}</span></td>
         <td style="font-size:11px;color:var(--text2);white-space:nowrap">${esc(p.avail||'—')}</td>
         <td><span class="badge rsv">Reserve</span></td>
+        <td class="admin-col" style="display:none">
+          <button onclick="promotePlayer('${p._key}')" style="background:rgba(39,160,106,.15);border:1px solid rgba(39,160,106,.3);border-radius:5px;color:#27a06a;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif;margin-right:4px">↑ Promote</button>
+          <button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕ Remove</button>
+        </td>
       </tr>`).join('');
+  }
+
+  if (isAdmin) {
+    document.querySelectorAll('.admin-col').forEach(c => c.style.display = 'table-cell');
   }
 }
 
@@ -693,6 +731,79 @@ window.toggleDay = function(row) {
   row.classList.toggle('open');
   const expandRow = row.nextElementSibling;
   if (expandRow) expandRow.classList.toggle('open');
+};
+
+// ── ADMIN ──
+let isAdmin = false;
+
+window.toggleAdminPanel = function() {
+  const panel = document.getElementById('admin-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('admin-error').style.display = 'none';
+  document.getElementById('admin-input').value = '';
+};
+
+window.verifyAdmin = async function() {
+  const input = document.getElementById('admin-input').value.trim();
+  try {
+    const snap = await get(ref(db, 'admin_config/password'));
+    if (snap.exists() && snap.val() === input) {
+      isAdmin = true;
+      document.getElementById('admin-panel').style.display    = 'none';
+      document.getElementById('admin-controls').style.display = 'block';
+      document.getElementById('admin-btn').textContent        = '🔓 Admin';
+      document.getElementById('admin-btn').style.color        = 'var(--gold)';
+      document.getElementById('admin-btn').style.borderColor  = 'var(--gold)';
+      document.querySelectorAll('.admin-col').forEach(c => c.style.display = 'table-cell');
+      toast('Admin mode unlocked.', true);
+    } else {
+      document.getElementById('admin-error').style.display = 'block';
+    }
+  } catch(e) {
+    toast('Failed to verify password.', false);
+  }
+};
+
+window.lockAdmin = function() {
+  isAdmin = false;
+  document.getElementById('admin-panel').style.display    = 'none';
+  document.getElementById('admin-controls').style.display = 'none';
+  document.getElementById('admin-btn').textContent        = '🔒 Admin';
+  document.getElementById('admin-btn').style.color        = '';
+  document.getElementById('admin-btn').style.borderColor  = '';
+  document.querySelectorAll('.admin-col').forEach(c => c.style.display = 'none');
+};
+
+window.removePlayer = async function(key) {
+  if (!isAdmin) return;
+  if (!confirm('Remove this player?')) return;
+  try {
+    await remove(ref(db, `guild_wars/${weekKey}/registrations/${key}`));
+    toast('Player removed.', true);
+  } catch(e) { toast('Failed to remove player.', false); }
+};
+
+window.promotePlayer = async function(key) {
+  if (!isAdmin) return;
+  if (!confirm('Promote this player to main roster?')) return;
+  try {
+    const snap = await get(ref(db, `guild_wars/${weekKey}/registrations/${key}`));
+    if (snap.exists()) {
+      const data = { ...snap.val(), isReserve: false };
+      await remove(ref(db, `guild_wars/${weekKey}/registrations/${key}`));
+      await push(baseRef, data);
+      toast('Player promoted to main roster.', true);
+    }
+  } catch(e) { toast('Failed to promote player.', false); }
+};
+
+window.clearAllAdmin = async function() {
+  if (!isAdmin) return;
+  if (!confirm('Clear ALL registrations? This cannot be undone.')) return;
+  try {
+    await remove(baseRef);
+    toast('All registrations cleared.', true);
+  } catch(e) { toast('Failed to clear.', false); }
 };
 
 populateWeapons();
