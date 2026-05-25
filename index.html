@@ -398,6 +398,8 @@ function jungleSatCount() { return players.filter(p => !p.isReserve && p.jungle 
 function jungleSunCount() { return players.filter(p => !p.isReserve && p.jungle && (p.avail==='Sunday'   || p.avail==='Sat & Sun')).length; }
 let players  = [];
 let jungleOn = false;
+let isAdmin  = false;
+let editKey  = null;
 
 const WEAPONS = [
   "Nameless Sword","Nameless Spear","Stormbreaker Spear","Thundercry Blade",
@@ -738,7 +740,6 @@ window.toggleDay = function(row) {
 };
 
 // ── EDIT ──
-let editKey = null;
 
 window.editPlayer = function(key) {
   if (!isAdmin) return;
