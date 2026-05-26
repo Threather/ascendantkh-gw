@@ -230,7 +230,8 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
   <div id="admin-controls" style="display:none;background:rgba(201,152,58,.06);border:1px solid rgba(201,152,58,.25);border-radius:var(--r);padding:.875rem 1.25rem;margin-bottom:1rem;animation:up .3s ease both">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">🔓 Admin Mode Active</span>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="exportRoster()" style="background:rgba(58,127,212,.15);border:1px solid rgba(58,127,212,.35);border-radius:var(--r-sm);color:#3a7fd4;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;cursor:pointer">📥 Export Roster</button>
         <button onclick="clearAllAdmin()" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.35);border-radius:var(--r-sm);color:#c94f4f;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;cursor:pointer">🧹 Clear All</button>
         <button onclick="lockAdmin()" style="background:none;border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:11px;padding:6px 12px;cursor:pointer">🔒 Lock</button>
       </div>
@@ -741,7 +742,131 @@ window.toggleDay = function(row) {
   if (expandRow) expandRow.classList.toggle('open');
 };
 
-// ── REGISTRATION CARD ──
+// ── EXPORT ROSTER ──
+window.exportRoster = function() {
+  const mainP    = players.filter(p => !p.isReserve);
+  const reserveP = players.filter(p => p.isReserve);
+  const now      = new Date();
+  const months   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr  = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  document.getElementById('ex-period').textContent = weekKey;
+  document.getElementById('ex-date').textContent   = dateStr;
+  document.getElementById('ex-counts').innerHTML   =
+    `Main: ${mainP.length} / 60<br>Reserve: ${reserveP.length}`;
+
+  // DAY SUMMARY
+  const days = ['Saturday','Sunday'];
+  const dayColors = { Saturday: '#7a5fd4', Sunday: '#c9783a' };
+  const roleCols  = { heal:'#27a06a', tank:'#c9783a', dps:'#3a7fd4' };
+  document.getElementById('ex-day-summary').innerHTML = days.map(day => {
+    const dp     = mainP.filter(p => p.avail === day || p.avail === 'Sat & Sun');
+    const defend = dp.filter(p => p.team === 'defend');
+    const attack = dp.filter(p => p.team === 'attack');
+    const roleRow = (arr) => ['heal','tank','dps'].map(r => {
+      const c = arr.filter(p => p.role === r).length;
+      return c ? `<span style="color:${roleCols[r]};font-size:10px;font-weight:600">${r.toUpperCase()} ${c}</span>` : '';
+    }).filter(Boolean).join(' · ');
+    return `<div style="background:#111419;padding:.875rem 1rem">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${dayColors[day]};margin-bottom:.5rem">${day} (${dp.length})</div>
+      <div style="margin-bottom:4px">
+        <span style="font-size:9px;color:#5a7ab5;letter-spacing:.08em;text-transform:uppercase;font-weight:600">🛡 Defend (${defend.length})</span>
+        <div style="margin-top:2px;font-size:10px;color:#7a7e9a">${roleRow(defend) || '—'}</div>
+      </div>
+      <div>
+        <span style="font-size:9px;color:#c9783a;letter-spacing:.08em;text-transform:uppercase;font-weight:600">⚔ Attack (${attack.length})</span>
+        <div style="margin-top:2px;font-size:10px;color:#7a7e9a">${roleRow(attack) || '—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // MAIN ROSTER TABLE
+  const roleIcon = { heal:'❤', tank:'■', dps:'⚡' };
+  const rows = mainP.map((p,i) => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+      <td style="padding:5px 8px;font-size:11px;color:#3e4260;width:24px">${i+1}</td>
+      <td style="padding:5px 8px;font-size:12px;font-weight:600;color:#e4e6f0">${esc(p.name)}</td>
+      <td style="padding:5px 8px;font-size:10px;font-weight:600;color:${roleCols[p.role]}">${roleIcon[p.role]||''} ${(p.role||'').toUpperCase()}</td>
+      <td style="padding:5px 8px;font-size:10px;color:${p.team==='defend'?'#5a7ab5':'#c9783a'};font-weight:600">${p.team==='defend'?'🛡':'⚔'} ${(p.team||'').toUpperCase()}</td>
+      <td style="padding:5px 8px;font-size:10px;color:#7a7e9a">${p.avail||'—'}</td>
+      <td style="padding:5px 8px;font-size:10px;color:${p.jungleSide==='Top'?'#5aaaf5':p.jungleSide==='Bottom'?'#e8943a':'#3e4260'}">${p.jungle&&p.jungleSide?'🌿 '+p.jungleSide:'—'}</td>
+    </tr>`).join('');
+
+  document.getElementById('ex-main-section').innerHTML = `
+    <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#c9983a;margin-bottom:.75rem;display:flex;align-items:center;gap:8px">
+      Main Roster <span style="flex:1;height:1px;background:rgba(201,152,58,.2);display:inline-block"></span>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.08)">
+          <th style="padding:4px 8px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260;text-align:left;font-weight:500">#</th>
+          <th style="padding:4px 8px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260;text-align:left;font-weight:500">IGN</th>
+          <th style="padding:4px 8px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260;text-align:left;font-weight:500">Role</th>
+          <th style="padding:4px 8px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260;text-align:left;font-weight:500">Team</th>
+          <th style="padding:4px 8px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260;text-align:left;font-weight:500">Day</th>
+          <th style="padding:4px 8px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260;text-align:left;font-weight:500">Jungle</th>
+        </tr>
+      </thead>
+      <tbody>${rows || '<tr><td colspan="6" style="padding:1rem;text-align:center;color:#3e4260;font-size:12px">No players registered</td></tr>'}</tbody>
+    </table>`;
+
+  // JUNGLE SECTION
+  const jTop = mainP.filter(p => p.jungle && p.jungleSide === 'Top');
+  const jBot = mainP.filter(p => p.jungle && p.jungleSide === 'Bottom');
+  const jSat = mainP.filter(p => p.jungle && (p.avail==='Saturday'||p.avail==='Sat & Sun')).length;
+  const jSun = mainP.filter(p => p.jungle && (p.avail==='Sunday'  ||p.avail==='Sat & Sun')).length;
+  document.getElementById('ex-jungle-section').innerHTML = `
+    <div style="background:#111419;border-radius:10px;padding:.875rem 1rem">
+      <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#c9983a;margin-bottom:.625rem;display:flex;justify-content:space-between">
+        <span>🌿 Jungle</span>
+        <span style="color:#3e4260">Sat ${jSat}/8 · Sun ${jSun}/8</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:9px;color:#5aaaf5;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Top (${jTop.length})</div>
+          ${jTop.map(p=>`<div style="font-size:11px;color:#e4e6f0;padding:2px 0">${esc(p.name)} <span style="color:${roleCols[p.role]};font-size:10px">${(p.role||'').toUpperCase()}</span></div>`).join('')||'<div style="font-size:11px;color:#3e4260">—</div>'}
+        </div>
+        <div>
+          <div style="font-size:9px;color:#e8943a;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Bottom (${jBot.length})</div>
+          ${jBot.map(p=>`<div style="font-size:11px;color:#e4e6f0;padding:2px 0">${esc(p.name)} <span style="color:${roleCols[p.role]};font-size:10px">${(p.role||'').toUpperCase()}</span></div>`).join('')||'<div style="font-size:11px;color:#3e4260">—</div>'}
+        </div>
+      </div>
+    </div>`;
+
+  // RESERVE SECTION
+  document.getElementById('ex-reserve-section').innerHTML = reserveP.length === 0 ? '' : `
+    <div style="background:#111419;border-radius:10px;padding:.875rem 1rem;margin-top:.875rem">
+      <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#7a5fd4;margin-bottom:.625rem">Reserve (${reserveP.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${reserveP.map(p=>`<span style="font-size:11px;color:#7a7e9a;background:rgba(122,95,212,.1);border:1px solid rgba(122,95,212,.2);padding:3px 10px;border-radius:20px">${esc(p.name)}</span>`).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById('export-modal').style.display = 'flex';
+};
+
+window.closeExport = function() {
+  document.getElementById('export-modal').style.display = 'none';
+};
+
+window.downloadRoster = async function() {
+  const card = document.getElementById('export-card');
+  const doCapture = async () => {
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: '#0c0e13', scale: 2, useCORS: true });
+      const a = document.createElement('a');
+      a.download = `ascendantkh-roster-${weekKey}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    } catch(e) { toast('Could not save image.', false); }
+  };
+  if (typeof html2canvas !== 'undefined') { doCapture(); return; }
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  script.onload = doCapture;
+  script.onerror = () => toast('Could not load image library.', false);
+  document.head.appendChild(script);
+};
 function showRegCard(p) {
   const now    = new Date();
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -959,6 +1084,53 @@ window.clearAllAdmin = async function() {
 populateWeapons();
 setStatus('connecting', 'Connecting to database…');
 </script>
+<!-- EXPORT ROSTER MODAL -->
+<div id="export-modal" onclick="if(event.target===this)closeExport()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto">
+  <div style="width:100%;max-width:640px;animation:up .3s ease both">
+    <div id="export-card" style="background:#0c0e13;border-radius:16px;overflow:hidden;font-family:'Outfit',sans-serif;border:1px solid rgba(201,152,58,.2)">
+
+      <!-- HEADER -->
+      <div style="background:linear-gradient(135deg,#c9983a,#a07020);padding:1.25rem 1.5rem;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 8px)"></div>
+        <div style="position:relative;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,0,0,.6);font-weight:600">AscendantKH Guild</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.06em;color:#0c0e13;line-height:1">Guild War Roster</div>
+            <div style="font-size:11px;color:rgba(0,0,0,.55);margin-top:2px" id="ex-period"></div>
+          </div>
+          <div style="text-align:right">
+            <div id="ex-counts" style="font-size:12px;color:rgba(0,0,0,.6);line-height:1.8"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY SUMMARY -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.05)" id="ex-day-summary"></div>
+
+      <!-- MAIN ROSTER -->
+      <div style="padding:1rem 1.25rem" id="ex-main-section"></div>
+
+      <!-- JUNGLE -->
+      <div style="padding:0 1.25rem 1rem" id="ex-jungle-section"></div>
+
+      <!-- RESERVE -->
+      <div style="padding:0 1.25rem 1.25rem" id="ex-reserve-section"></div>
+
+      <!-- FOOTER -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260">AscendantKH · Guild War</div>
+        <div style="font-size:9px;color:#3e4260" id="ex-date"></div>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button onclick="downloadRoster()" style="flex:1;padding:11px;background:var(--gold);border:none;border-radius:10px;color:#0c0e13;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer">📥 Download Image</button>
+      <button onclick="closeExport()" style="padding:11px 20px;background:none;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#7a7e9a;font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- REGISTRATION CARD MODAL -->
 <div id="reg-card-modal" onclick="if(event.target===this)closeRegCard()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:600;align-items:center;justify-content:center;padding:1rem">
 
