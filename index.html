@@ -69,8 +69,8 @@ header p{font-size:13px;color:var(--text2);font-weight:300;margin-top:.35rem;let
 .pill input:checked+span{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
 .pill span:hover{background:var(--bg-hover);color:var(--text1)}
 .pill.heal input:checked+span{border-color:var(--heal);background:rgba(39,160,106,.12);color:var(--heal)}
-.pill.tank input:checked+span{border-color:var(--tank);background:rgba(58,127,212,.12);color:var(--tank)}
-.pill.dps  input:checked+span{border-color:var(--dps);background:rgba(201,79,79,.12);color:var(--dps)}
+.pill.tank input:checked+span{border-color:var(--tank);background:rgba(201,120,58,.12);color:var(--tank)}
+.pill.dps  input:checked+span{border-color:var(--dps);background:rgba(58,127,212,.12);color:var(--dps)}
 .pill.sat  input:checked+span{border-color:#7a5fd4;background:rgba(122,95,212,.12);color:#7a5fd4}
 .pill.sun  input:checked+span{border-color:#c9783a;background:rgba(201,120,58,.12);color:#c9783a}
 .pill.both input:checked+span{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
@@ -184,8 +184,19 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
 .badge.jungle-bot{background:rgba(201,120,58,.15);color:#e8943a}
 .badge.rsv{background:var(--reserve-dim);color:var(--reserve)}
 
-.empty-state{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;border-top:1px solid var(--border)}
+.page-info{font-size:11px;color:var(--text3);letter-spacing:.04em}
+.page-btns{display:flex;gap:6px}
+.page-btn{background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:11px;font-weight:500;padding:4px 12px;cursor:pointer;transition:all .18s}
+.page-btn:hover{background:var(--bg-hover);color:var(--text1)}
+.page-btn:disabled{opacity:.3;cursor:not-allowed}
+.page-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
 .empty-state p{margin-top:.4rem;font-size:11px;opacity:.6}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;border-top:1px solid var(--border)}
+.pg-btn{background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:11px;padding:5px 12px;cursor:pointer;transition:all .18s}
+.pg-btn:hover:not(:disabled){background:var(--bg-hover);color:var(--text1)}
+.pg-btn:disabled{opacity:.3;cursor:not-allowed}
+.pg-info{font-size:11px;color:var(--text3);letter-spacing:.04em}
 
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:480px){
@@ -357,6 +368,11 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
             </tbody>
           </table>
         </div>
+        <div class="pagination" id="main-pagination" style="display:none">
+          <button class="pg-btn" id="main-prev" onclick="changePage('main',-1)">← Prev</button>
+          <span class="pg-info" id="main-pg-info">Page 1 / 1</span>
+          <button class="pg-btn" id="main-next" onclick="changePage('main',1)">Next →</button>
+        </div>
 
         <!-- RESERVE SECTION (inside same card) -->
         <div id="reserve-section" style="display:none">
@@ -368,6 +384,11 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
               </thead>
               <tbody id="reserve-body"></tbody>
             </table>
+          </div>
+          <div class="pagination" id="reserve-pagination" style="display:none">
+            <button class="pg-btn" id="reserve-prev" onclick="changePage('reserve',-1)">← Prev</button>
+            <span class="pg-info" id="reserve-pg-info">Page 1 / 1</span>
+            <button class="pg-btn" id="reserve-next" onclick="changePage('reserve',1)">Next →</button>
           </div>
         </div>
 
@@ -386,7 +407,7 @@ const firebaseConfig = {
   authDomain: "ascendantkh-gw.firebaseapp.com",
   databaseURL: "https://ascendantkh-gw-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "ascendantkh-gw",
-  storageBucket: "ascendantkh-gw.firebasestorage.app",
+  storageBucket: "ascendantkh-gw.appspot.com",
   messagingSenderId: "181758417135",
   appId: "1:181758417135:web:aada38d84e8ddd977ba31a"
 };
@@ -403,6 +424,9 @@ let players  = [];
 let jungleOn = false;
 let isAdmin  = false;
 let editKey  = null;
+let mainPage    = 1;
+let reservePage = 1;
+const PAGE_SIZE = 10;
 
 const WEAPONS = [
   "Nameless Sword","Nameless Spear","Stormbreaker Spear","Thundercry Blade",
@@ -447,12 +471,18 @@ function setStatus(state, text) {
 }
 
 onValue(baseRef, (snap) => {
+  const prevCount = players.length;
   players = [];
   const val = snap.val();
   if (val) Object.entries(val).forEach(([key, data]) => players.push({ _key: key, ...data }));
+  // Only reset page if player count changed significantly
+  if (Math.abs(players.length - prevCount) > 0) {
+    mainPage = 1;
+    reservePage = 1;
+  }
   setStatus('live', `Live · ${weekKey}`);
   render();
-}, () => setStatus('error', 'Connection error'));
+}, (error) => setStatus('error', 'Connection error'));
 
 window.toggleJungle = function() {
   const wrap = document.getElementById('jungle-wrap');
@@ -686,10 +716,15 @@ function render() {
   const tbody = document.getElementById('roster-body');
   if (mainPlayers.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No registrations yet<p>Be the first to sign up</p></div></td></tr>';
+    document.getElementById('main-pagination').style.display = 'none';
   } else {
-    tbody.innerHTML = mainPlayers.map((p, i) => `
+    const totalMainPages = Math.ceil(mainPlayers.length / PAGE_SIZE);
+    if (mainPage > totalMainPages) mainPage = totalMainPages;
+    const start = (mainPage - 1) * PAGE_SIZE;
+    const paged = mainPlayers.slice(start, start + PAGE_SIZE);
+    tbody.innerHTML = paged.map((p, i) => `
       <tr>
-        <td class="num">${i+1}</td>
+        <td class="num">${start + i + 1}</td>
         <td class="ign">${esc(p.name)}</td>
         <td class="wpn">${esc(p.weapon1)}<br><span style="color:var(--text3)">${esc(p.weapon2)}</span></td>
         <td><span class="badge ${p.role}">${p.role}</span></td>
@@ -703,6 +738,11 @@ function render() {
           <button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕</button>
         </td>
       </tr>`).join('');
+    const pgEl = document.getElementById('main-pagination');
+    pgEl.style.display = totalMainPages > 1 ? 'flex' : 'none';
+    document.getElementById('main-pg-info').textContent = `Page ${mainPage} / ${totalMainPages}`;
+    document.getElementById('main-prev').disabled = mainPage === 1;
+    document.getElementById('main-next').disabled = mainPage === totalMainPages;
   }
 
   // ── RESERVE ROSTER ──
@@ -712,9 +752,13 @@ function render() {
     reserveSection.style.display = 'none';
   } else {
     reserveSection.style.display = 'block';
-    reserveBody.innerHTML = reservePlayers.map((p, i) => `
+    const totalResPages = Math.ceil(reservePlayers.length / PAGE_SIZE);
+    if (reservePage > totalResPages) reservePage = totalResPages;
+    const rStart = (reservePage - 1) * PAGE_SIZE;
+    const rPaged = reservePlayers.slice(rStart, rStart + PAGE_SIZE);
+    reserveBody.innerHTML = rPaged.map((p, i) => `
       <tr class="reserve-row">
-        <td class="num">${i+1}</td>
+        <td class="num">${rStart + i + 1}</td>
         <td class="ign">${esc(p.name)}</td>
         <td class="wpn">${esc(p.weapon1)}<br><span style="color:var(--text3)">${esc(p.weapon2)}</span></td>
         <td><span class="badge ${p.role}">${p.role}</span></td>
@@ -727,6 +771,11 @@ function render() {
           <button onclick="removePlayer('${p._key}')" style="background:rgba(201,79,79,.15);border:1px solid rgba(201,79,79,.3);border-radius:5px;color:#c94f4f;font-size:10px;padding:3px 8px;cursor:pointer;font-family:'Outfit',sans-serif">✕</button>
         </td>
       </tr>`).join('');
+    const rpgEl = document.getElementById('reserve-pagination');
+    rpgEl.style.display = totalResPages > 1 ? 'flex' : 'none';
+    document.getElementById('reserve-pg-info').textContent = `Page ${reservePage} / ${totalResPages}`;
+    document.getElementById('reserve-prev').disabled = reservePage === 1;
+    document.getElementById('reserve-next').disabled = reservePage === totalResPages;
   }
 
   if (isAdmin) {
@@ -740,6 +789,15 @@ window.toggleDay = function(row) {
   row.classList.toggle('open');
   const expandRow = row.nextElementSibling;
   if (expandRow) expandRow.classList.toggle('open');
+};
+
+window.changePage = function(type, dir) {
+  if (type === 'main') {
+    mainPage += dir;
+  } else {
+    reservePage += dir;
+  }
+  render();
 };
 
 // ── EXPORT ROSTER ──
