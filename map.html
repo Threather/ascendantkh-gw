@@ -623,10 +623,14 @@ function makeDraggable(el) {
     if (img) {
       img.style.width  = newSize + 'px';
       img.style.height = newSize + 'px';
+      const label = el.querySelector('.mlabel');
+      if (label) label.style.fontSize = Math.max(7, Math.round(newSize * 0.22)) + 'px';
     } else if (inner) {
       inner.style.width  = newSize + 'px';
       inner.style.height = newSize + 'px';
       inner.style.fontSize = Math.max(8, Math.round(newSize * 0.32)) + 'px';
+      const label = el.querySelector('.pmlabel');
+      if (label) label.style.fontSize = Math.max(7, Math.round(newSize * 0.22)) + 'px';
     }
   }, { passive: false });
 
