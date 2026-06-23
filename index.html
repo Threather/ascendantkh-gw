@@ -184,6 +184,7 @@ tbody tr.reserve-row td.ign{color:var(--text2)}
 .badge.jungle-bot{background:rgba(201,120,58,.15);color:#e8943a}
 .badge.rsv{background:var(--reserve-dim);color:var(--reserve)}
 
+.empty-state p{margin-top:.4rem;font-size:11px;opacity:.6}
 .pagination{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;border-top:1px solid var(--border)}
 .pg-btn{background:var(--bg-input);border:1px solid var(--border-hi);border-radius:var(--r-sm);color:var(--text2);font-family:'Outfit',sans-serif;font-size:11px;padding:5px 12px;cursor:pointer;transition:all .18s}
 .pg-btn:hover:not(:disabled){background:var(--bg-hover);color:var(--text1)}
@@ -430,7 +431,7 @@ const WEAPONS = [
 function getMonthKey() {
   const now = new Date();
   const day = now.getDay(); // 0=Sun, 1=Mon...
-  const diff = day === 0 ? -6 : 1 - day; // get to most recent Monday
+  const diff = day === 0 ? -6 : -(day - 1);
   const monday = new Date(now);
   monday.setDate(now.getDate() + diff);
   const yyyy = monday.getFullYear();
