@@ -83,6 +83,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .map-viewport.grabbing{cursor:grabbing}
 .map-viewport.drawing{cursor:crosshair}
 
+/* TILT STAGE — wrapper (kept for layout) */
+#tilt-stage{position:absolute;inset:0;}
+/* 3D PRESENTATION SCENE */
+#scene3d{position:absolute;inset:0;z-index:15;display:none;cursor:grab}
+#scene3d:active{cursor:grabbing}
+.map-viewport.mode3d #tilt-stage{display:none}
+
 /* MAP WORLD — this is what gets scaled/translated */
 #map-world{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform;}
 #map-canvas{display:block;}
@@ -90,6 +97,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* MARKERS */
 .marker{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:all;cursor:move;user-select:none;z-index:20;}
+@keyframes dropIn{0%{transform:translate(-50%,-120%) scale(.4);opacity:0}60%{transform:translate(-50%,-46%) scale(1.08);opacity:1}100%{transform:translate(-50%,-50%) scale(1)}}
+.marker,.pmarker{animation:dropIn .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes bossPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(201,152,58,.5))}50%{filter:drop-shadow(0 0 14px rgba(201,152,58,.95))}}
+.marker.boss img{animation:bossPulse 2.2s ease-in-out infinite}
+.pmarker-inner{position:relative}
+.pmarker-inner::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid currentColor;opacity:0;animation:ringPulse 2.6s ease-out infinite}
+@keyframes ringPulse{0%{transform:scale(.8);opacity:.7}70%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+.pmarker-inner.heal::after{color:var(--heal)}.pmarker-inner.tank::after{color:var(--tank)}.pmarker-inner.dps::after{color:var(--dps)}
+@media(prefers-reduced-motion:reduce){.marker,.pmarker{animation:none}.marker.boss img,.pmarker-inner::after{animation:none}}
 .marker:hover img{filter:drop-shadow(0 0 6px var(--gold))}
 .marker img{width:36px;height:36px;object-fit:contain;pointer-events:none;display:block;}
 .marker .mlabel{font-size:9px;font-weight:600;color:#fff;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:10px;white-space:nowrap;pointer-events:none;}
@@ -145,6 +161,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="tool-btn" id="btn-pan" onclick="setMode('pan')">✋ Pan</button>
     <button class="tool-btn" id="btn-draw" onclick="setMode('draw')">✏️ Draw</button>
     <button class="tool-btn" id="btn-arrow" onclick="setMode('arrow')">➡️ Arrow</button>
+    <div class="divider"></div>
+    <button class="tool-btn" id="btn-3d" onclick="toggle3D()">🎬 3D View</button>
     <div class="divider"></div>
     <button class="tool-btn" onclick="zoomIn()">＋</button>
     <span class="zoom-info" id="zoom-info">100%</span>
@@ -240,10 +258,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     ondrop="onDrop(event)">
 
     <!-- WORLD: canvas + markers together, both get zoomed/panned -->
-    <div id="map-world">
-      <canvas id="map-canvas"></canvas>
-      <div id="markers-layer"></div>
+    <div id="tilt-stage">
+      <div id="map-world">
+        <canvas id="map-canvas"></canvas>
+        <div id="markers-layer"></div>
+      </div>
     </div>
+
+    <!-- 3D PRESENTATION SCENE -->
+    <canvas id="scene3d"></canvas>
 
     <div class="statusbar" id="statusbar">↖ Select — drag objectives or players · Scroll to zoom · Pan with ✋</div>
   </div>
@@ -374,11 +397,21 @@ mapImg.onload = () => {
   const vw = viewport.clientWidth;
   const vh = viewport.clientHeight;
   const fitZoom = Math.min(vw / canvas.width, vh / canvas.height) * 0.95;
-  zoom = fitZoom;
-  panX = (vw - canvas.width  * zoom) / 2;
-  panY = (vh - canvas.height * zoom) / 2;
-  applyTransform();
+  const endZoom = fitZoom, endX = (vw - canvas.width * fitZoom) / 2, endY = (vh - canvas.height * fitZoom) / 2;
   redrawCanvas();
+  // cinematic glide-in: start slightly zoomed out and above, ease into place
+  const startZoom = fitZoom * 0.82, t0 = performance.now(), DUR = 850;
+  const ease = k => 1 - Math.pow(1 - k, 3);
+  (function glide(t) {
+    const k = ease(Math.min((t - t0) / DUR, 1));
+    zoom = startZoom + (endZoom - startZoom) * k;
+    panX = (vw - canvas.width  * zoom) / 2;
+    panY = (vh - canvas.height * zoom) / 2 - 40 * (1 - k);
+    world.style.opacity = k;
+    applyTransform();
+    if (k < 1) requestAnimationFrame(glide);
+    else { zoom = endZoom; panX = endX; panY = endY; world.style.opacity = 1; applyTransform(); }
+  })(t0);
 };
 mapImg.onerror = () => showToast('map.png not found — check your repo', false);
 
@@ -404,8 +437,16 @@ function drawPath(path) {
   ctx.lineJoin    = 'round';
   ctx.moveTo(path.points[0].x, path.points[0].y);
   path.points.forEach(pt => ctx.lineTo(pt.x, pt.y));
-  ctx.stroke();
+  if (!path.arrow) ctx.stroke();
   if (path.arrow) {
+    // flowing dash so movement orders visibly "march" along the arrow
+    ctx.save();
+    ctx.setLineDash([path.size * 3, path.size * 2.2]);
+    ctx.lineDashOffset = dashOffset;
+    ctx.shadowColor = path.color;
+    ctx.shadowBlur  = 6;
+    ctx.stroke();
+    ctx.restore();
     const pts   = path.points;
     const last  = pts[pts.length - 1];
     const prev  = pts[pts.length - 2] || pts[0];
@@ -569,7 +610,7 @@ window.onDrop = function(e) {
 // ── PLACE OBJECTIVE ──
 function placeObj(src, label, wx, wy) {
   const el = document.createElement('div');
-  el.className = 'marker';
+  el.className = 'marker' + (label === 'Boss' ? ' boss' : '');
   el.style.left = wx + 'px';
   el.style.top  = wy + 'px';
   el.innerHTML = `<img src="${src}"><span class="mlabel">${label}</span><button class="del-btn" onclick="this.parentElement.remove()">✕</button>`;
@@ -673,6 +714,10 @@ function makeDraggable(el) {
 
 // ── MODE ──
 window.setMode = function(m) {
+  if (typeof is3D !== 'undefined' && is3D && m !== 'pan') {
+    showToast('Toggle off 3D View to edit the map', false);
+    return;
+  }
   mode = m;
   ['select','pan','draw','arrow'].forEach(id => {
     document.getElementById('btn-'+id)?.classList.toggle('active', id === m);
@@ -734,6 +779,47 @@ window.importMap = function() {
     reader.readAsText(e.target.files[0]);
   };
   inp.click();
+};
+
+// ── ANIMATED ARROWS (marching dash, ~30fps, only when arrows exist) ──
+let dashOffset = 0, lastDashT = 0;
+(function animateArrows(t) {
+  requestAnimationFrame(animateArrows);
+  if (document.hidden || isDrawing) return;
+  if (!drawHistory.some(p => p.arrow)) return;
+  if (t - lastDashT < 33) return;
+  lastDashT = t;
+  dashOffset -= 1.2;
+  redrawCanvas();
+})(0);
+
+// ── 3D PRESENTATION MODE ──
+let is3D = false, m3d = null;
+window.toggle3D = async function() {
+  const btn = document.getElementById('btn-3d');
+  if (!is3D) {
+    btn.textContent = '⏳ Loading…';
+    try {
+      m3d = m3d || await import('./map3d.js');
+      redrawCanvas(); // make sure ground texture is fresh
+      m3d.enter3D({ container: viewport, mapCanvas: canvas, markerEls: [...markersLayer.children] });
+      is3D = true;
+      viewport.classList.add('mode3d');
+      btn.classList.add('active');
+      setMode('pan');
+      document.getElementById('statusbar').textContent = '🎬 3D — drag empty space to orbit · drag an object to move it · scroll to zoom';
+    } catch (e) {
+      console.error(e);
+      showToast('3D view failed to load', false);
+    }
+    btn.textContent = '🎬 3D View';
+  } else {
+    is3D = false;
+    m3d && m3d.exit3D();
+    viewport.classList.remove('mode3d');
+    btn.classList.remove('active');
+    setMode('select');
+  }
 };
 
 let toastT;
