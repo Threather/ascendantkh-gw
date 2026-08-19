@@ -9,7 +9,7 @@ let theta = -Math.PI / 4, phi = 1.05, radius = 150, lastInteract = 0;
 let W = 140, H = 100, mapW = 1, mapH = 1;
 let draggables = [];
 
-const BLUE = 0x3a7fd4, RED = 0xc94f4f, GOLD = 0xc9983a;
+const BLUE = 0x6285a8, RED = 0xc0453c, GOLD = 0xb8934a;
 const mat = {
   stone:  () => new THREE.MeshStandardMaterial({ color: 0x8a8272, roughness: .9 }),
   stone2: () => new THREE.MeshStandardMaterial({ color: 0x6e675c, roughness: .95 }),
@@ -207,7 +207,7 @@ function makeBoss() {
   head.position.y = 12.1; lord.add(head);
   const helm = new THREE.Mesh(new THREE.ConeGeometry(1.05, 1.8, 8), armor);
   helm.position.y = 13.2; lord.add(helm);
-  const plume = new THREE.Mesh(new THREE.ConeGeometry(.22, 1.6, 6), mat.glowM(0xc94f4f, .9));
+  const plume = new THREE.Mesh(new THREE.ConeGeometry(.22, 1.6, 6), mat.glowM(0xc0453c, .9));
   plume.position.y = 14.4; lord.add(plume);
   // glowing eyes
   [-1, 1].forEach(s => {
@@ -406,18 +406,18 @@ function makeJungleCamp() {
   crate.position.set(-1.8, .5, -1.8); crate.rotation.y = .5; g.add(crate);
   const crate2 = new THREE.Mesh(new THREE.BoxGeometry(.8, .8, .8), mat.wood());
   crate2.position.set(-2.5, .4, -.9); g.add(crate2);
-  g.add(teamFlag(0x27a06a, 4.5, 2.8, -2.2));
-  g.add(groundRing(0x27a06a, 4.6));
+  g.add(teamFlag(0x6b9b78, 4.5, 2.8, -2.2));
+  g.add(groundRing(0x6b9b78, 4.6));
   return g;
 }
 
 // ── PLAYER — role disc with light column ──
 function makePlayer(role, initials) {
   const g = new THREE.Group();
-  const roleColor = { heal: '#27a06a', tank: '#c9783a', dps: '#3a7fd4' };
+  const roleColor = { heal: '#6b9b78', tank: '#b07c45', dps: '#6285a8' };
   const c = document.createElement('canvas'); c.width = c.height = 96;
   const x = c.getContext('2d');
-  x.fillStyle = roleColor[role] || '#c9983a';
+  x.fillStyle = roleColor[role] || '#b8934a';
   x.beginPath(); x.arc(48, 48, 40, 0, 7); x.fill();
   x.strokeStyle = 'rgba(255,255,255,.75)'; x.lineWidth = 5; x.stroke();
   x.fillStyle = '#fff'; x.font = '700 34px Outfit,sans-serif';
@@ -430,7 +430,7 @@ function makePlayer(role, initials) {
   const stem = new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, 4.5, 6),
     new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .35 }));
   stem.position.y = 2.25; g.add(stem);
-  const col = new THREE.Color(roleColor[role] || '#c9983a');
+  const col = new THREE.Color(roleColor[role] || '#b8934a');
   g.add(pillarOfLight(col, .7, 14, .08));
   g.add(groundRing(col.getHex(), 2));
   return g;
