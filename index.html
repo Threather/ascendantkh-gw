@@ -261,7 +261,7 @@ body:not(.entered) header,body:not(.entered) .status-bar,body:not(.entered) .sta
 
 <!-- ENTRANCE -->
 <div id="enter-overlay">
-  <div class="eo-eyebrow">AscendantKH — Where Winds Meet</div>
+  <div class="eo-eyebrow">Fateless — Where Winds Meet</div>
   <div class="eo-title">Guild <span>War</span></div>
   <div class="eo-sub">The banners are raised. The wind carries your name.</div>
   <button class="eo-btn" id="enter-btn">Enter</button>
@@ -275,7 +275,7 @@ body:not(.entered) header,body:not(.entered) .status-bar,body:not(.entered) .sta
 
 <div class="page">
   <header>
-    <div class="eyebrow">AscendantKH — Guild War</div>
+    <div class="eyebrow">Fateless — Guild War</div>
     <h1>War <span>Registration</span></h1>
     <p>Secure your slot before the battle begins</p>
   </header>
@@ -994,7 +994,7 @@ window.downloadRoster = async function() {
     try {
       const canvas = await html2canvas(card, { backgroundColor: '#0c0e13', scale: 2, useCORS: true });
       const a = document.createElement('a');
-      a.download = `ascendantkh-roster-${weekKey}.png`;
+      a.download = `fateless-roster-${weekKey}.png`;
       a.href = canvas.toDataURL('image/png');
       a.click();
     } catch(e) { toast('Could not save image.', false); }
@@ -1448,7 +1448,7 @@ async function initBG() {
         <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 8px)"></div>
         <div style="position:relative;display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,0,0,.6);font-weight:600">AscendantKH Guild</div>
+            <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,0,0,.6);font-weight:600">Fateless Guild</div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.06em;color:#0c0e13;line-height:1">Guild War Roster</div>
             <div style="font-size:11px;color:rgba(0,0,0,.55);margin-top:2px" id="ex-period"></div>
           </div>
@@ -1472,7 +1472,7 @@ async function initBG() {
 
       <!-- FOOTER -->
       <div style="border-top:1px solid rgba(255,255,255,.06);padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between">
-        <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260">AscendantKH · Guild War</div>
+        <div style="font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#3e4260">Fateless · Guild War</div>
         <div style="font-size:9px;color:#3e4260" id="ex-date"></div>
       </div>
     </div>
@@ -1499,7 +1499,7 @@ async function initBG() {
         <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 8px);"></div>
         <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between">
           <div>
-            <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,0,0,.6);font-weight:600">AscendantKH Guild</div>
+            <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,0,0,.6);font-weight:600">Fateless Guild</div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.06em;color:#0e1018;line-height:1;margin-top:2px">Guild War</div>
             <div style="font-size:11px;color:rgba(0,0,0,.55);margin-top:3px;letter-spacing:.04em" id="rc-month"></div>
           </div>
