@@ -23,7 +23,6 @@ SITE_URL = "https://threather.github.io/fateless-gw/"
 IMAGE_BASE = "https://raw.githubusercontent.com/Threather/fateless-gw/main/assets"
 
 KH = timezone(timedelta(hours=7))
-ROSTER_WEEKS = 2                    # this week + last week only; older names age out
 CAPTION_LIMIT = 1024                # Telegram photo caption cap
 PROXIES = {"http": "http://proxy.server:3128", "https": "http://proxy.server:3128"}
 
@@ -93,10 +92,11 @@ def load_data(now):
     blocked = {n.lower() for n in (db.reference("/roster_blocklist").get() or {})}
 
     this_week = week_key(now)
-    recent = {week_key(now - timedelta(weeks=i)) for i in range(ROSTER_WEEKS)}
 
+    # The roster accumulates across every week on record. Names only leave it
+    # by being added to roster_blocklist from the admin page.
     roster = {}       # lowercase -> display name, most recent spelling wins
-    for wk in sorted(k for k in guild_wars if k in recent):
+    for wk in sorted(guild_wars):
         for player in (guild_wars[wk].get("registrations") or {}).values():
             name = (player.get("name") or "").strip()
             if name and name.lower() not in blocked:

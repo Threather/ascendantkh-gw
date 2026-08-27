@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fateless · Roster Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=IBM+Plex+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --void:#07080b;--ash:#12141a;--line:#23262f;
+  --bone:#e9e5dc;--dim:#8e8b84;--brass:#b8934a;--cut:#c0453c;
+  --bg:var(--void);--bg-card:#0d0f14;--bg-input:#12141a;--bg-hover:#191c23;
+  --border:rgba(233,229,220,.07);--border-hi:#23262f;
+  --gold:var(--brass);--text1:var(--bone);--text2:var(--dim);--text3:#55534c;
+  --success:#6b9b78;--error:var(--cut);--warn:#b8934a;
+  --display:"Bodoni Moda",Georgia,serif;
+  --body:"Inter",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+body{background:var(--bg);color:var(--text1);font-family:var(--body);font-weight:300;font-size:15px;line-height:1.65;min-height:100vh;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 50% 0%,transparent 42%,rgba(0,0,0,.72) 100%)}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:3rem 1.25rem 5rem}
+h1{font-family:var(--display);font-weight:400;font-size:2rem;letter-spacing:.01em}
+.sub{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-top:.4rem}
+.card{background:var(--bg-card);border:1px solid var(--border-hi);padding:1.25rem;margin-top:1.75rem}
+label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text2);margin-bottom:.5rem}
+input[type=password],input[type=text]{width:100%;background:var(--bg-input);border:1px solid var(--border-hi);color:var(--text1);
+  font-family:var(--body);font-size:14px;padding:11px 13px;outline:none;transition:border-color .18s}
+input:focus{border-color:var(--gold)}
+button{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;
+  background:var(--bg-input);border:1px solid var(--border-hi);color:var(--text1);padding:10px 16px;transition:all .18s}
+button:hover{background:var(--bg-hover);border-color:var(--gold)}
+button.primary{background:var(--gold);border-color:var(--gold);color:#0b0a08;font-weight:500}
+button.primary:hover{filter:brightness(1.1)}
+button.mini{padding:5px 10px;font-size:10px;letter-spacing:.1em}
+.stats{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+.stat .val{font-family:var(--display);font-size:1.7rem;line-height:1.1}
+.stat .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-top:.15rem}
+.row{display:flex;align-items:center;gap:.9rem;padding:.7rem .25rem;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.blocked .nm{color:var(--text3);text-decoration:line-through}
+.meta{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.04em;white-space:nowrap}
+.tag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid;white-space:nowrap}
+.tag.dup{color:var(--warn);border-color:rgba(184,147,74,.35);background:rgba(184,147,74,.1)}
+.tag.reg{color:var(--success);border-color:rgba(107,155,120,.3);background:rgba(107,155,120,.1)}
+.note{font-size:13px;color:var(--text2);margin-top:.6rem}
+.note b{color:var(--warn);font-weight:500}
+.err{color:var(--error);font-size:13px;margin-top:.6rem;min-height:1.2em}
+.hidden{display:none}
+.sec-title{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin:2rem 0 .35rem}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Roster Admin</h1>
+  <div class="sub">Fateless · guild war registration</div>
+
+  <div class="card" id="gate">
+    <label for="pw">Admin password</label>
+    <input type="password" id="pw" placeholder="••••••••" autocomplete="current-password">
+    <div style="margin-top:.9rem"><button class="primary" id="go">Unlock</button></div>
+    <div class="err" id="gate-err"></div>
+  </div>
+
+  <div id="panel" class="hidden">
+    <div class="stats">
+      <div class="stat"><div class="val" id="s-total">–</div><div class="lbl">Roster</div></div>
+      <div class="stat"><div class="val" id="s-reg">–</div><div class="lbl">Registered</div></div>
+      <div class="stat"><div class="val" id="s-hidden">–</div><div class="lbl">Hidden</div></div>
+      <div class="stat"><div class="val" id="s-dup">–</div><div class="lbl">Look-alikes</div></div>
+    </div>
+
+    <div class="note">
+      Hiding a name removes it from the bot's roster permanently — use it for typos and
+      people who left. Names flagged <b>look-alike</b> are near-identical to another name,
+      which usually means someone mistyped their IGN.
+    </div>
+
+    <div class="sec-title">Week of <span id="wk">–</span></div>
+    <div class="card" id="list"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCUJfamdNNdK9MbuYUk_5cZJj6ncrO5_6E",
+  authDomain: "ascendantkh-gw.firebaseapp.com",
+  databaseURL: "https://ascendantkh-gw-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ascendantkh-gw",
+  storageBucket: "ascendantkh-gw.appspot.com",
+  messagingSenderId: "181758417135",
+  appId: "1:181758417135:web:aada38d84e8ddd977ba31a"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+const $ = id => document.getElementById(id);
+
+// Monday of the current week — must match getMonthKey() in index.html
+function weekKey(){
+  const now = new Date(), day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + (day === 0 ? -6 : -(day - 1)));
+  return `${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`;
+}
+
+// Levenshtein distance, capped — only used to flag likely typos.
+function near(a, b){
+  if (Math.abs(a.length - b.length) > 2) return false;
+  const m = a.length, n = b.length;
+  let prev = Array.from({length: n+1}, (_, i) => i);
+  for (let i = 1; i <= m; i++){
+    const cur = [i];
+    for (let j = 1; j <= n; j++){
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[n] <= 2;
+}
+
+let state = { roster: [], blocked: new Set(), registered: new Set(), week: '' };
+
+async function load(){
+  const [gwSnap, blockSnap] = await Promise.all([
+    get(ref(db, 'guild_wars')),
+    get(ref(db, 'roster_blocklist')),
+  ]);
+  const gw = gwSnap.val() || {};
+  state.blocked = new Set(Object.keys(blockSnap.val() || {}).map(k => k.toLowerCase()));
+  state.week = weekKey();
+
+  const seen = new Map();   // lowercase -> {name, weeks:Set}
+  for (const wk of Object.keys(gw).sort()){
+    for (const p of Object.values(gw[wk]?.registrations || {})){
+      const name = (p.name || '').trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!seen.has(key)) seen.set(key, { name, weeks: new Set() });
+      seen.get(key).name = name;
+      seen.get(key).weeks.add(wk);
+    }
+  }
+  state.registered = new Set(
+    Object.values(gw[state.week]?.registrations || {})
+      .map(p => (p.name || '').trim().toLowerCase()).filter(Boolean)
+  );
+  state.roster = [...seen.entries()]
+    .map(([key, v]) => ({ key, name: v.name, weeks: v.weeks.size, last: [...v.weeks].sort().pop() }))
+    .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+
+  render();
+}
+
+function render(){
+  const live = state.roster.filter(r => !state.blocked.has(r.key));
+  const dups = new Set();
+  for (let i = 0; i < live.length; i++){
+    for (let j = i+1; j < live.length; j++){
+      if (near(live[i].key, live[j].key)){ dups.add(live[i].key); dups.add(live[j].key); }
+    }
+  }
+
+  $('wk').textContent = state.week;
+  $('s-total').textContent = live.length;
+  $('s-reg').textContent = state.registered.size;
+  $('s-hidden').textContent = state.roster.length - live.length;
+  $('s-dup').textContent = dups.size;
+
+  $('list').innerHTML = '';
+  for (const r of state.roster){
+    const isBlocked = state.blocked.has(r.key);
+    const row = document.createElement('div');
+    row.className = 'row' + (isBlocked ? ' blocked' : '');
+
+    const nm = document.createElement('div');
+    nm.className = 'nm';
+    nm.textContent = r.name;
+    row.appendChild(nm);
+
+    if (!isBlocked && state.registered.has(r.key)){
+      const t = document.createElement('span');
+      t.className = 'tag reg'; t.textContent = 'registered';
+      row.appendChild(t);
+    }
+    if (!isBlocked && dups.has(r.key)){
+      const t = document.createElement('span');
+      t.className = 'tag dup'; t.textContent = 'look-alike';
+      row.appendChild(t);
+    }
+
+    const meta = document.createElement('span');
+    meta.className = 'meta';
+    meta.textContent = `${r.weeks}w · ${r.last}`;
+    row.appendChild(meta);
+
+    const btn = document.createElement('button');
+    btn.className = 'mini';
+    btn.textContent = isBlocked ? 'Restore' : 'Hide';
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const node = ref(db, `roster_blocklist/${encodeURIComponent(r.key)}`);
+      if (isBlocked){ await remove(node); state.blocked.delete(r.key); }
+      else { await set(node, r.name); state.blocked.add(r.key); }
+      render();
+    };
+    row.appendChild(btn);
+
+    $('list').appendChild(row);
+  }
+}
+
+async function unlock(){
+  const pw = $('pw').value;
+  $('gate-err').textContent = '';
+  if (!pw) return;
+  try {
+    await signInWithEmailAndPassword(auth, 'kevinpom9991@gmail.com', pw);
+    $('gate').classList.add('hidden');
+    $('panel').classList.remove('hidden');
+    await load();
+  } catch (e) {
+    $('gate-err').textContent = 'Wrong password.';
+  }
+}
+
+$('go').onclick = unlock;
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
+</script>
+</body>
+</html>
