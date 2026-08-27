@@ -23,7 +23,7 @@ SITE_URL = "https://threather.github.io/fateless-gw/"
 IMAGE_BASE = "https://raw.githubusercontent.com/Threather/fateless-gw/main/assets"
 
 KH = timezone(timedelta(hours=7))
-ROSTER_WEEKS = 3                    # this week + 2 prior; older names age out
+ROSTER_WEEKS = 2                    # this week + last week only; older names age out
 CAPTION_LIMIT = 1024                # Telegram photo caption cap
 PROXIES = {"http": "http://proxy.server:3128", "https": "http://proxy.server:3128"}
 
