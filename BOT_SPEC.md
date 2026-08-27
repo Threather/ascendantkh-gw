@@ -54,9 +54,17 @@
 - Tags: 'registered' this week, 'look-alike' for edit-distance <= 2 name pairs
 - Writes to roster_blocklist/{lowercased name}
 
+## Status (2026-08-27)
+- Live. Task set Daily 12:00 UTC, token in place, images pushed and serving.
+- Roster seeded from ROSTER_START = 2026-08-17, grows as new names register.
+- Firebase rules updated with roster_blocklist (read public, write auth-only).
+- python3 gw_report.py --test          preview, no send
+- python3 gw_report.py --preview-week  DM all 7 days to admin
+
 ## Open items
-- Change PythonAnywhere task time 13:00 -> 12:00 UTC
 - Rotate bot token (was pasted in chat), then re-run the sed on PythonAnywhere
+- Extend PythonAnywhere task expiry (currently 2026-09-24)
+- Optional: /report on demand via a webhook web app (free tier supports one)
 - Hero Realms image not yet generated
 - Optional: use the Google Sheet as roster source instead of registration history
   (sheet is private; would need publishing that tab as CSV)
