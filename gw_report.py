@@ -225,8 +225,35 @@ def visible_len(s):
     return len(html.unescape(re.sub(r"<[^>]+>", "", s)))
 
 
+def preview_week():
+    """DM all seven days to the admin, so the whole week can be eyeballed."""
+    base = datetime.now(KH)
+    monday = base - timedelta(days=base.weekday())
+    for i in range(7):
+        day = monday + timedelta(days=i)
+        photo, caption, body = build(day)
+        combined = f"{caption}\n\n{body}"
+        one = visible_len(combined) <= CAPTION_LIMIT
+        ok = api("sendPhoto", {
+            "chat_id": ADMIN_CHAT_ID,
+            "photo": photo,
+            "caption": combined if one else caption,
+            "parse_mode": "HTML",
+        })
+        if ok and not one:
+            api("sendMessage", {
+                "chat_id": ADMIN_CHAT_ID, "text": body,
+                "parse_mode": "HTML", "disable_web_page_preview": True,
+            })
+        print(f"{day:%a %Y-%m-%d} -> {'sent' if ok else 'FAILED'}")
+        time.sleep(2)
+
+
 def main():
     test_mode = "--test" in sys.argv
+    if "--preview-week" in sys.argv:
+        preview_week()
+        return
     now = datetime.now(KH)
     photo, caption, body = build(now)
 
