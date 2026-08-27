@@ -40,15 +40,30 @@
 - Sun — Guild War 7:30-9:00PM. Image: gw-register.png
 
 ## GW registration block (appears in message)
-- Reads guild_wars/{latest_date}/registrations
-- Registered count + names
+- Week key = Monday of current week, matching getMonthKey() in index.html
+- Registered = names in guild_wars/{this_monday}/registrations
+- Roster = every name ever registered, across all weeks (cumulative)
 - Not-registered = roster - registered
-- Roster = unique names across all dates, aged out after 4 weeks
-- Blocklist node to permanently hide bad/typo names
+- Names are pruned only via roster_blocklist, managed at /roster.html
 - Name lists in <blockquote expandable> (HTML parse mode), tap to expand
-- Caption limit 1024 chars -> may need photo + separate text message
+- Sent as one photo caption; auto-splits into a second message past 1024 chars
+
+## Admin page (roster.html)
+- Same Firebase auth as the main site
+- Lists all known names with Hide / Restore
+- Tags: 'registered' this week, 'look-alike' for edit-distance <= 2 name pairs
+- Writes to roster_blocklist/{lowercased name}
 
 ## Open items
-- Rotate bot token (exposed in chat)
+- Change PythonAnywhere task time 13:00 -> 12:00 UTC
+- Rotate bot token (was pasted in chat), then re-run the sed on PythonAnywhere
 - Hero Realms image not yet generated
+- Optional: use the Google Sheet as roster source instead of registration history
+  (sheet is private; would need publishing that tab as CSV)
 - Dead webhook at threather.pythonanywhere.com/webhook was deleted
+
+## Updating the bot
+Push here, then on PythonAnywhere:
+  curl -o /home/Threather/gw_report.py https://raw.githubusercontent.com/Threather/fateless-gw/main/gw_report.py
+  sed -i 's|YOUR_TOKEN_HERE|<token>|' /home/Threather/gw_report.py
+  python3 /home/Threather/gw_report.py --test
