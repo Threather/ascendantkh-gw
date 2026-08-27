@@ -4,6 +4,7 @@ Runs once a day at 12:00 UTC (7PM Cambodia) on PythonAnywhere.
 Preview without sending:  python gw_report.py --test
 """
 import html
+import re
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -23,6 +24,7 @@ IMAGE_BASE = "https://raw.githubusercontent.com/Threather/fateless-gw/main/asset
 
 KH = timezone(timedelta(hours=7))
 ROSTER_WEEKS = 4                    # names unseen this long age out of the roster
+CAPTION_LIMIT = 1024                # Telegram photo caption cap
 PROXIES = {"http": "http://proxy.server:3128", "https": "http://proxy.server:3128"}
 
 # --- Weekly schedule: weekday -> (title, image, [(time, event)]) ---
@@ -217,30 +219,41 @@ def alert_admin(text):
         pass
 
 
+def visible_len(s):
+    """Length Telegram counts: markup stripped, entities decoded."""
+    return len(html.unescape(re.sub(r"<[^>]+>", "", s)))
+
+
 def main():
     test_mode = "--test" in sys.argv
     now = datetime.now(KH)
     photo, caption, body = build(now)
 
+    combined = f"{caption}\n\n{body}"
+    one_message = visible_len(combined) <= CAPTION_LIMIT
+
     print(photo)
-    print(caption)
-    print()
-    print(body)
+    print(combined if one_message else f"{caption}\n\n[split]\n\n{body}")
 
     if test_mode:
         return
 
-    if not api("sendPhoto", {
-        "chat_id": CHAT_ID, "photo": photo,
-        "caption": caption, "parse_mode": "HTML",
-    }):
+    sent = api("sendPhoto", {
+        "chat_id": CHAT_ID,
+        "photo": photo,
+        "caption": combined if one_message else caption,
+        "parse_mode": "HTML",
+    })
+    if not sent:
         alert_admin("GW bot: sendPhoto failed, falling back to text.")
         api("sendMessage", {
-            "chat_id": CHAT_ID, "text": caption,
+            "chat_id": CHAT_ID, "text": combined,
             "parse_mode": "HTML", "disable_web_page_preview": True,
         })
+        return
 
-    if not api("sendMessage", {
+    # Roster outgrew the caption limit, so the report follows separately.
+    if not one_message and not api("sendMessage", {
         "chat_id": CHAT_ID, "text": body,
         "parse_mode": "HTML", "disable_web_page_preview": True,
     }):
