@@ -24,6 +24,7 @@ IMAGE_BASE = "https://raw.githubusercontent.com/Threather/fateless-gw/main/asset
 
 KH = timezone(timedelta(hours=7))
 CAPTION_LIMIT = 1024                # Telegram photo caption cap
+ROSTER_START = "2026-08-17"          # roster ignores weeks before this Monday
 PROXIES = {"http": "http://proxy.server:3128", "https": "http://proxy.server:3128"}
 
 # --- Weekly schedule: weekday -> (title, image, [(time, event)]) ---
@@ -93,10 +94,10 @@ def load_data(now):
 
     this_week = week_key(now)
 
-    # The roster accumulates across every week on record. Names only leave it
-    # by being added to roster_blocklist from the admin page.
+    # The roster accumulates from ROSTER_START onward, so old members and dead
+    # spellings never come back. Names leave it only via roster_blocklist.
     roster = {}       # lowercase -> display name, most recent spelling wins
-    for wk in sorted(guild_wars):
+    for wk in sorted(k for k in guild_wars if k >= ROSTER_START):
         for player in (guild_wars[wk].get("registrations") or {}).values():
             name = (player.get("name") or "").strip()
             if name and name.lower() not in blocked:

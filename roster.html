@@ -106,6 +106,9 @@ const auth = getAuth(app);
 
 const $ = id => document.getElementById(id);
 
+// Must match ROSTER_START in gw_report.py
+const ROSTER_START = '2026-08-17';
+
 // Monday of the current week — must match getMonthKey() in index.html
 function weekKey(){
   const now = new Date(), day = now.getDay();
@@ -152,7 +155,7 @@ async function load(){
   state.week = weekKey();
 
   const seen = new Map();   // lowercase -> {name, weeks:Set}
-  for (const wk of Object.keys(gw).sort()){
+  for (const wk of Object.keys(gw).sort().filter(w => w >= ROSTER_START)){
     for (const p of Object.values(gw[wk]?.registrations || {})){
       const name = (p.name || '').trim();
       if (!name) continue;
