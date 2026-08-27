@@ -65,6 +65,8 @@ a{color:var(--gold)}
     <div class="err" id="gate-err"></div>
   </div>
 
+  <div class="err hidden" id="warn" style="border:1px solid rgba(192,69,60,.35);background:rgba(192,69,60,.08);padding:.75rem 1rem;margin-top:1.5rem"></div>
+
   <div id="panel" class="hidden">
     <div class="stats">
       <div class="stat"><div class="val" id="s-total">–</div><div class="lbl">Roster</div></div>
@@ -129,13 +131,24 @@ function near(a, b){
 
 let state = { roster: [], blocked: new Set(), registered: new Set(), week: '' };
 
+function warn(msg){
+  const box = $('warn');
+  box.textContent = msg;
+  box.classList.remove('hidden');
+}
+
 async function load(){
-  const [gwSnap, blockSnap] = await Promise.all([
-    get(ref(db, 'guild_wars')),
-    get(ref(db, 'roster_blocklist')),
-  ]);
+  const gwSnap = await get(ref(db, 'guild_wars'));
+  // A denied read here just means the blocklist rule is missing; the roster
+  // is still worth showing, so treat it as empty rather than failing outright.
+  let blockVal = {};
+  try {
+    blockVal = (await get(ref(db, 'roster_blocklist'))).val() || {};
+  } catch (e) {
+    warn('Cannot read roster_blocklist — check Firebase rules. Hiding will not persist.');
+  }
   const gw = gwSnap.val() || {};
-  state.blocked = new Set(Object.keys(blockSnap.val() || {}).map(k => k.toLowerCase()));
+  state.blocked = new Set(Object.keys(blockVal).map(k => k.toLowerCase()));
   state.week = weekKey();
 
   const seen = new Map();   // lowercase -> {name, weeks:Set}
@@ -208,8 +221,14 @@ function render(){
     btn.onclick = async () => {
       btn.disabled = true;
       const node = ref(db, `roster_blocklist/${encodeURIComponent(r.key)}`);
-      if (isBlocked){ await remove(node); state.blocked.delete(r.key); }
-      else { await set(node, r.name); state.blocked.add(r.key); }
+      try {
+        if (isBlocked){ await remove(node); state.blocked.delete(r.key); }
+        else { await set(node, r.name); state.blocked.add(r.key); }
+      } catch (e) {
+        warn('Write denied — add a roster_blocklist rule in Firebase. (' + (e.message || e) + ')');
+        btn.disabled = false;
+        return;
+      }
       render();
     };
     row.appendChild(btn);
@@ -226,9 +245,14 @@ async function unlock(){
     await signInWithEmailAndPassword(auth, 'kevinpom9991@gmail.com', pw);
     $('gate').classList.add('hidden');
     $('panel').classList.remove('hidden');
-    await load();
   } catch (e) {
     $('gate-err').textContent = 'Wrong password.';
+    return;
+  }
+  try {
+    await load();
+  } catch (e) {
+    warn('Could not load roster: ' + (e && e.message ? e.message : e));
   }
 }
 
